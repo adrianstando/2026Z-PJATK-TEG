@@ -1,0 +1,10 @@
+# Notebooki z zajęć. W Colabie większość jest już zainstalowana.
+openai>=1.60
+anthropic>=0.70
+python-dotenv
+tiktoken
+numpy
+scikit-learn
+matplotlib
+seaborn
+jupyter

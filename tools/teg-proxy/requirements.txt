@@ -1,0 +1,6 @@
+# teg-proxy: pip install -r requirements.txt && python teg_proxy.py
+fastapi>=0.115
+uvicorn>=0.30
+claude-agent-sdk>=0.2.160     # Claude Code jako biblioteka (subskrypcja Claude)
+github-copilot-sdk>=1.0.16    # GitHub Copilot (wymaga Pythona 3.11+)
+openai-codex>=0.159           # OpenAI Codex (subskrypcja ChatGPT)

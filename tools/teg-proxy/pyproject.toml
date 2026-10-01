@@ -1,0 +1,22 @@
+[project]
+name = "teg-proxy"
+version = "0.1.0"
+description = "Lokalny serwer zgodny z API OpenAI na Twojej subskrypcji Claude (Agent SDK), GitHub Copilot (Copilot SDK) albo Codex (Codex SDK)."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "claude-agent-sdk>=0.2.160",
+]
+
+[project.optional-dependencies]
+copilot = ["github-copilot-sdk>=1.0.16"]
+codex = ["openai-codex>=0.159"]
+all = ["github-copilot-sdk>=1.0.16", "openai-codex>=0.159"]
+
+[project.scripts]
+teg-proxy = "teg_proxy.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
