@@ -1,60 +1,60 @@
-# Komponenty: atomic design
+# Components: atomic design
 
-Atomic design (Brad Frost) to podział UI na poziomy. Każdy poziom składa się **tylko** z poziomów niższych. To porządek, który agent kodujący łatwo utrzymuje: wie, gdzie szukać i gdzie dopisać.
+Atomic design (Brad Frost) splits UI into levels. Each level is built **only** from lower levels, so it's clear where to look and where to add.
 
 ```
-atomy        components/ui/         nie znają domeny, 1 element HTML + style
-molekuły     components/molecules/  kilka atomów = jedna funkcja (blok kodu, karta)
-organizmy    components/viz/        samodzielne sekcje: wizualizacje, nawigacja, hero
+atoms        components/ui/         domain-agnostic, 1 HTML element + styles
+molecules    components/molecules/  a few atoms = one function (code block, card)
+organisms    components/viz/        self-contained sections: visualizations, nav, hero
              components/site/
              components/lesson/
-szablony     components/site/Slide  szkielet planszy
-strony       app/**/page.tsx        tylko składanie organizmów + treść
+templates    components/site/Slide  board skeleton
+pages        app/**/page.tsx        only compose organisms + content
 ```
 
-## Atomy (`components/ui`)
+## Atoms (`components/ui`)
 
-| Komponent | Kiedy |
+| Component | When |
 |---|---|
-| `Badge` (`tone`: neutral/brand/hit/miss/focus) | status, typ aktywności, krótka etykieta |
-| `Button` (`variant`: primary/ghost, `asChild`) | akcja; `asChild` + `<Link>`/`<a>` do nawigacji (Radix Slot) |
-| `Panel` | każdy „szklany” prostokąt: tło kart, okien, wizualizacji |
-| `Eyebrow` | nadtytuł sekcji, zawsze mono i uppercase |
-| `Kbd` | skrót klawiszowy |
+| `Badge` (`tone`: neutral/brand/hit/miss/focus) | status, activity type, short label |
+| `Button` (`variant`: primary/ghost, `asChild`) | action; `asChild` + `<Link>`/`<a>` for navigation (Radix Slot) |
+| `Panel` | every "glass" rectangle: card, window, visualization background |
+| `Eyebrow` | section overline, always mono and uppercase |
+| `Kbd` | keyboard shortcut |
 
-## Molekuły (`components/molecules`)
+## Molecules (`components/molecules`)
 
-| Komponent | Kiedy |
+| Component | When |
 |---|---|
-| `SectionHeading` | **każda** sekcja zaczyna się od niego |
-| `CodeBlock` (async, serwerowy) | kod; `highlight={[n]}` wskazuje linie (od 1) |
-| `CodeTabs` | ten sam przykład w kilku wariantach (Radix Tabs, pigułka z `layoutId`) |
-| `Terminal` | wynik komórki; linie dopisują się po wejściu w kadr; `wrap={false}` dla tabel |
-| `Callout` (`insight` / `warning`) | jedna myśl do zapamiętania albo pułapka; max 1 na slajd |
-| `LessonCard` | kafelek zajęć na stronie głównej |
-| `Markdown` | README z repo w stylu strony (jedno źródło prawdy) |
-| `notebook/NotebookView` | notebook `.ipynb` sekcja po sekcji: markdown, kod, zapisane wyniki, wykresy |
+| `SectionHeading` | **every** section starts with it |
+| `CodeBlock` (async, server) | code; `highlight={[n]}` marks lines (1-based) |
+| `CodeTabs` | same example in several variants (Radix Tabs, pill with `layoutId`) |
+| `Terminal` | cell output; lines appear on entering viewport; `wrap={false}` for tables |
+| `Callout` (`insight` / `warning`) | one takeaway or one pitfall; max 1 per slide |
+| `LessonCard` | lesson tile on the home page |
+| `Markdown` | repo README in site style (single source of truth) |
+| `notebook/NotebookView` | `.ipynb` section by section: markdown, code, saved outputs, plots |
 
-## Organizmy
+## Organisms
 
-| Komponent | Co pokazuje |
+| Component | Shows |
 |---|---|
-| `viz/SamplingViz` | proces generowania: temperatura → top-k → top-p → losowanie, tabela kolejnych generowań |
-| `viz/TokenizerViz` | tekst pocięty prawdziwym tokenizerem (Radix ToggleGroup) |
-| `viz/EmbeddingSpace` | słowa w 2D (t-SNE), sąsiedzi liczeni na pełnych wektorach |
-| `viz/VectorSpace3D` | dwa wektory w 3D (rzut prostokątny, obracana kamera) i cztery miary: cosinus, iloczyn, L2, L1 |
-| `viz/VectorSearchViz` | zapytanie → skan wszystkich wektorów → top-k (liczone na żywo) |
-| `viz/ContextSpace` | kot / pies / kotek w kontekstach, dwa modele; trójkąt z dokładnymi odległościami (twierdzenie cosinusów) |
-| `viz/MiniGraph` | graf wiedzy rysowany krawędź po krawędzi, podświetlona ścieżka odpowiedzi |
-| `viz/HeroConstellation` | ozdoba hero strony głównej z prawdziwych embeddingów |
-| `viz/GradingBar` | 100 pkt jako pasek segmentów |
-| `site/SiteNav`, `site/Breadcrumbs`, `site/Slide`, `site/PresenterKeys`, `site/BackgroundMesh` | rama strony, okruszki i nawigacja klawiaturą |
-| `lesson/HeroTitle` | tytuł otwierający z animacją słów |
+| `viz/SamplingViz` | generation: temperature → top-k → top-p → sampling, table of successive generations |
+| `viz/TokenizerViz` | text split by a real tokenizer (Radix ToggleGroup) |
+| `viz/EmbeddingSpace` | words in 2D (t-SNE), neighbors computed on full vectors |
+| `viz/VectorSpace3D` | two vectors in 3D (orthographic, rotating camera) and four measures: cosine, dot, L2, L1 |
+| `viz/VectorSearchViz` | query → scan all vectors → top-k (computed live) |
+| `viz/ContextSpace` | cat / dog / kitten in contexts, two models; triangle with exact distances (law of cosines) |
+| `viz/MiniGraph` | knowledge graph drawn edge by edge, highlighted answer path |
+| `viz/HeroConstellation` | home hero decoration from real embeddings |
+| `viz/GradingBar` | 100 points as a segmented bar |
+| `site/SiteNav`, `site/Breadcrumbs`, `site/Slide`, `site/PresenterKeys`, `site/BackgroundMesh` | page frame, breadcrumbs, keyboard navigation |
+| `lesson/HeroTitle` | opening title with word animation |
 
-## Reguły pisania komponentu
+## Writing a component
 
-- Komentarz nad komponentem: **poziom + jedno zdanie, po co jest** (`/** Molekuła: … */`).
-- `"use client"` tylko gdy potrzebny stan, efekt albo motion. `CodeBlock` i strony zostają serwerowe.
-- Propsy minimalne. Zamiast 10 flag zrób drugi komponent.
-- Klasy łącz przez `cn()` z `lib/cn.ts`. Komponent przyjmuje `className` do pozycjonowania z zewnątrz.
-- Interakcja (suwak, przełącznik, zakładki, tooltip, dialog) zawsze przez prymityw **Radix**, bo daje dostępność z klawiatury za darmo.
+- Comment above it: **level + one sentence on its purpose** (`/** Molekuła: … */`, comments in Polish).
+- `"use client"` only when state, effects or motion are needed. `CodeBlock` and pages stay server components.
+- Minimal props. Instead of 10 flags, make a second component.
+- Join classes with `cn()` from `lib/cn.ts`. Accept `className` for outside positioning.
+- Interactions (slider, toggle, tabs, tooltip, dialog) always via a **Radix** primitive for free keyboard accessibility.

@@ -1,17 +1,17 @@
-# Przepis: nowa wizualizacja
+# Recipe: new visualization
 
-Przykład: „wyszukiwanie hybrydowe: BM25 + embeddingi + fuzja rang” na zajęcia 2.
+Example: "hybrid search: BM25 + embeddings + rank fusion" for lesson 2.
 
-## 1. Dane: policz wcześniej, zapisz JSON
+## 1. Data: precompute, save JSON
 
-W `web/scripts/generate_data.py` (albo osobnym skrypcie w `web/scripts/`) policz to, co potrzebne, i zapisz do `web/src/data/<nazwa>.json`. Zasady:
+In `web/scripts/generate_data.py` (or a separate script in `web/scripts/`) compute what's needed and save to `web/src/data/<name>.json`. Rules:
 
-- prawdziwe modele (Ollama `embeddinggemma`, tiktoken, rank_bm25), żadnych kluczy API,
-- wektory zaokrąglone do 4 miejsc (rozmiar pliku),
-- współrzędne 2D znormalizowane do [0, 1],
-- w docstringu skryptu: komenda uruchomienia i **dlaczego** wybrany model/rzut.
+- real models (Ollama `embeddinggemma`, tiktoken, rank_bm25), no API keys,
+- vectors rounded to 4 decimals (file size),
+- 2D coordinates normalized to [0, 1],
+- script docstring: run command and **why** this model/projection.
 
-## 2. Komponent w `components/viz/`
+## 2. Component in `components/viz/`
 
 ```tsx
 "use client";
@@ -21,26 +21,26 @@ import { motion, useInView } from "motion/react";
 import data from "@/data/hybrid.json";
 import { Panel } from "@/components/ui/Panel";
 
-/** Organizm: <jedno zdanie, jaki proces pokazuje>. Dane: scripts/<skrypt>. */
+/** Organizm: <one sentence on the process it shows>. Dane: scripts/<script>. */
 export function HybridSearchViz() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-20% 0px" });
-  // stan = krok procesu albo parametr sterowany przez prowadzącego
+  // state = process step or a parameter the instructor controls
   ...
   return (
     <div ref={ref}>
-      <Panel className="p-6 md:p-8">{/* SVG z viewBox albo siatka */}</Panel>
+      <Panel className="p-6 md:p-8">{/* SVG with viewBox or a grid */}</Panel>
     </div>
   );
 }
 ```
 
-## 3. Lista kontrolna
+## 3. Checklist
 
-- [ ] Odpowiada na pytanie „jaki krok procesu pokazuje ruch?”.
-- [ ] Kolory: `hit` dla wyników, `focus` dla zapytania lub tego, co steruje, `cat-*` dla serii. Nic spoza tokenów.
-- [ ] Sterowanie przez Radix (`Slider`, `ToggleGroup`, `Tabs`), z `aria-label`.
-- [ ] Liczby `font-mono tabular-nums`.
-- [ ] Działa bez JS w pierwszym renderze (SSR pokazuje stan początkowy).
-- [ ] Zero błędów w konsoli (patrz pułapki w `motion.md`).
-- [ ] Wpis w tabeli organizmów w `components.md`.
+- [ ] Answers "which process step does the motion show?".
+- [ ] Colors: `hit` for results, `focus` for the query or the control, `cat-*` for series. Nothing outside tokens.
+- [ ] Controls via Radix (`Slider`, `ToggleGroup`, `Tabs`), with `aria-label`.
+- [ ] Numbers `font-mono tabular-nums`.
+- [ ] Works without JS on first render (SSR shows the initial state).
+- [ ] Zero console errors (see pitfalls in `motion.md`).
+- [ ] Entry in the organisms table in `components.md`.

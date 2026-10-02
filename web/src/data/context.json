@@ -38,28 +38,28 @@
    ]
   },
   {
-   "name": "paraphrase-multilingual-mpnet-base-v2",
-   "dim": 768,
+   "name": "text-embedding-3-small",
+   "dim": 1536,
    "sims": [
     {
-     "cat_dog": 0.2745,
-     "cat_kitten": 0.9085,
-     "dog_kitten": 0.2913
+     "cat_dog": 0.6027,
+     "cat_kitten": 0.5696,
+     "dog_kitten": 0.4196
     },
     {
-     "cat_dog": 0.6536,
-     "cat_kitten": 0.9246,
-     "dog_kitten": 0.6236
+     "cat_dog": 0.767,
+     "cat_kitten": 0.8822,
+     "dog_kitten": 0.6977
     },
     {
-     "cat_dog": 0.6429,
-     "cat_kitten": 0.9265,
-     "dog_kitten": 0.6257
+     "cat_dog": 0.7761,
+     "cat_kitten": 0.908,
+     "dog_kitten": 0.6949
     },
     {
-     "cat_dog": 0.7665,
-     "cat_kitten": 0.9421,
-     "dog_kitten": 0.7343
+     "cat_dog": 0.7803,
+     "cat_kitten": 0.9055,
+     "dog_kitten": 0.7371
     }
    ]
   }

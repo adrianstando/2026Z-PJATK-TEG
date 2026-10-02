@@ -1,37 +1,37 @@
-# Responsywność i znane błędy
+# Responsiveness and known bugs
 
-Lista powstała z błędów naprawianych w tym repo. Każdy punkt to objaw → przyczyna → rozwiązanie.
+Collected from bugs fixed in this repo. Each item: symptom → cause → fix.
 
-## Rozdzielczości
+## Resolutions
 
-- Sprawdzane zawsze: **1440×900** (projektor) i **390×844** (telefon).
-- Siatki: `grid gap-6 lg:grid-cols-2`; poniżej `lg` jedna kolumna. Kolumny o stałej szerokości (`lg:grid-cols-[1fr_24rem]`) tylko z prefiksem `lg:`.
-- Tabele zawsze w kontenerze `overflow-x-auto`.
-- Długie wyniki w terminalu: `max-h-[30rem] overflow-auto whitespace-pre-wrap`.
-- Elementy dodatkowe na wąskim ekranie chowane (`hidden md:flex`), nigdy ściskane.
-- SVG: `viewBox` + `className="h-auto w-full"`; rozmiar fontu w SVG w jednostkach `viewBox`, więc na telefonie maleje razem z rysunkiem. Etykiety muszą być czytelne przy szerokości 360 px.
+- Always check **1440×900** (projector) and **390×844** (phone).
+- Grids: `grid gap-6 lg:grid-cols-2`; one column below `lg`. Fixed-width columns (`lg:grid-cols-[1fr_24rem]`) only with the `lg:` prefix.
+- Tables always inside `overflow-x-auto`.
+- Long terminal outputs: `max-h-[30rem] overflow-auto whitespace-pre-wrap`.
+- Secondary elements hidden on narrow screens (`hidden md:flex`), never squeezed.
+- SVG: `viewBox` + `className="h-auto w-full"`; SVG font size is in `viewBox` units, so it shrinks with the drawing on phones. Labels must be readable at 360 px width.
 
-## Błędy już naprawione (nie powtarzać)
+## Already fixed (don't repeat)
 
-| Objaw | Przyczyna | Rozwiązanie |
+| Symptom | Cause | Fix |
 |---|---|---|
-| Etykiety przy krawędzi wykresu ucięte („zaskocz…”) | tekst wychodzi poza `viewBox`, a `<svg>` domyślnie ucina zawartość | margines wewnętrzny w `viewBox` na etykiety albo `overflow-visible` na `<svg>` |
-| Dół liter g, y, ę ucięty w dużym nagłówku | maska `overflow-hidden` przy animacji wjazdu słów jest dokładnie na wysokość linii | `pb-[0.2em]` na masce i `-mb-[0.2em]`, żeby nie zmienić odstępów |
-| Linie nie trafiają w wyróżnione punkty | `scale` na grupie `<g>` w SVG skaluje od środka pudełka elementu i przesuwa punkt | powiększać promień (`r` + CSS `transition`), nie skalować grupy |
-| Węzły grafu nie pojawiają się | `whileInView` na elemencie z `scale: 0` ma zerowy rozmiar i nigdy nie wchodzi w kadr | animację wejścia sterować z rodzica (`whileInView` na `<svg>`, dzieci tylko `variants`) |
-| Błędy „attribute r/cx/x2: Expected length, undefined” | `motion.circle`/`motion.line` animujące atrybuty geometrii; ustawienie wartości statycznie nie zawsze pomaga | geometria (`cx`, `cy`, `r`, `x2`) jako zwykły atrybut zwykłego elementu SVG + CSS `transition`; `motion.line` tylko do `pathLength` i `opacity` |
-| Suwak bez nazwy dla czytnika ekranu | `aria-label` na `Slider.Root`, a rolę `slider` ma `Slider.Thumb` | `aria-label` na `Slider.Thumb` |
-| Strona się wywraca po zmianie notebooka w trakcie `npm run dev` | wygenerowany JSON z komórkami jest starszy niż notebook | `npm run sync`; dostęp do komórek przez `NB[...]` z wartością zastępczą |
-| Ostrzeżenie o niezgodności hydratacji na `<body>` | rozszerzenia przeglądarki (np. Grammarly) dopisują atrybuty | `suppressHydrationWarning` tylko na `<body>` |
-| Ostrzeżenie Next o `scroll-behavior: smooth` | brak atrybutu na `<html>` | `data-scroll-behavior="smooth"` na `<html>` |
-| Emoji jako puste kwadraty | font bez glifów emoji | w `--font-sans` fonty emoji na końcu listy; emoji i tak tylko tam, gdzie niosą informację |
-| Biały tekst na przycisku poniżej WCAG AA | `brand-500` z białym ma 3,9:1 | tło `primary` (`brand-600`), hover przez `brightness-110` |
-| Kolumny tabeli w terminalu rozjeżdżają się na telefonie | `whitespace-pre-wrap` łamie wiersze tabeli | `Terminal wrap={false}`: `whitespace-pre` i przewijanie w poziomie |
-| Punkty z jednej grupy zlewają się w jeden na wykresie 2D | wspólny rzut PCA wielu grup: największa wariancja jest między grupami | rzut liczony dla wybranej grupy; dla 3 punktów rysunek dokładny (trójkąt z odległości) |
-| Animacja ciągła rozprasza i obciąża CPU | stały obrót kamery w 3D | animacja ciągła domyślnie wyłączona, przycisk start/stop |
+| Labels at chart edge clipped | text exceeds `viewBox`, `<svg>` clips by default | inner margin in `viewBox` for labels or `overflow-visible` on `<svg>` |
+| Descenders (g, y, ę) clipped in large heading | `overflow-hidden` mask for word reveal is exactly line height | `pb-[0.2em]` on the mask and `-mb-[0.2em]` to keep spacing |
+| Lines miss highlighted points | `scale` on an SVG `<g>` scales from the element box center and shifts the point | grow the radius (`r` + CSS `transition`), don't scale the group |
+| Graph nodes never appear | `whileInView` on an element with `scale: 0` has zero size and never enters view | drive entrance from the parent (`whileInView` on `<svg>`, children only `variants`) |
+| "attribute r/cx/x2: Expected length, undefined" | `motion.circle`/`motion.line` animating geometry attributes; static values don't always help | geometry (`cx`, `cy`, `r`, `x2`) as plain attributes on plain SVG elements + CSS `transition`; `motion.line` only for `pathLength` and `opacity` |
+| Slider has no screen-reader name | `aria-label` on `Slider.Root`, but `Slider.Thumb` has the `slider` role | `aria-label` on `Slider.Thumb` |
+| Page crashes after notebook change during `npm run dev` | generated cell JSON older than the notebook | `npm run sync`; access cells via `NB[...]` with a fallback |
+| Hydration mismatch warning on `<body>` | browser extensions (e.g. Grammarly) add attributes | `suppressHydrationWarning` only on `<body>` |
+| Next warning about `scroll-behavior: smooth` | missing attribute on `<html>` | `data-scroll-behavior="smooth"` on `<html>` |
+| Emoji as empty squares | font without emoji glyphs | emoji fonts at the end of `--font-sans`; emoji only where they carry information |
+| White button text below WCAG AA | `brand-500` with white is 3.9:1 | `primary` background (`brand-600`), hover via `brightness-110` |
+| Terminal table columns misalign on phone | `whitespace-pre-wrap` wraps table rows | `Terminal wrap={false}`: `whitespace-pre` and horizontal scroll |
+| Points of one group merge into one on a 2D plot | shared PCA over many groups: largest variance is between groups | projection computed for the chosen group; for 3 points an exact drawing (triangle from distances) |
+| Continuous animation distracts and loads CPU | constant 3D camera rotation | continuous animation off by default, start/stop button |
 
-## Nawigacja
+## Navigation
 
-- `PresenterKeys` (w layoutcie): ← → i PageUp/PageDown skaczą po elementach z `data-slide`; ↑ ↓ i spacja przewijają normalnie.
-- Elementy z `data-slide` mają `scroll-mt-*` większy niż wysokość paska nawigacji, żeby nagłówek nie chował się pod paskiem.
-- Okruszki (`Breadcrumbs`) na każdej podstronie; na stronie głównej brak.
+- `PresenterKeys` (in layout): ← → and PageUp/PageDown jump between `data-slide` elements; ↑ ↓ and Space scroll normally.
+- `data-slide` elements have `scroll-mt-*` larger than the navbar height so the heading isn't hidden under it.
+- Breadcrumbs (`Breadcrumbs`) on every subpage; none on the home page.

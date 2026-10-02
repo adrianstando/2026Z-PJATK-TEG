@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: TEG Night Blue
-description: Design system strony z materiałami do laboratoriów Technologie Generatywne (web/). Prezentacje dla projektora i materiał do czytania na telefonie.
+description: Design system of the Generative Technologies lab materials site (web/). Projector presentations and reading material on phones.
 colors:
   primary: "#1f5fd1"
   on-primary: "#ffffff"
@@ -150,66 +150,66 @@ components:
 
 ## Overview
 
-Granatowa noc i niebieskie światło. Strona służy jednocześnie jako prezentacja na projektorze (ciemna sala, duże nagłówki, sterowanie klawiaturą) i jako materiał do przeczytania na telefonie. Charakter jest techniczny i spokojny: ciemne tło z wolno dryfującymi plamami niebieskiego i cyjanu, delikatna siatka, szklane panele. Ruch pokazuje proces, którego dotyczy slajd (losowanie tokenu, porównanie wektorów, rysowanie grafu), a nie zdobi.
+Navy night and blue light. The site is both a projector presentation (dark room, large headings, keyboard control) and material to read on a phone. Technical and calm: dark background with slowly drifting blue and cyan blobs, a subtle grid, glass panels. Motion shows the process the slide is about (sampling a token, comparing vectors, drawing a graph), never decoration.
 
-Implementacja: Next.js (statyczny eksport), Tailwind CSS v4, prymitywy Radix UI, `motion`. Sposób budowania komponentów i lista błędów, których należy unikać, są w skillu [`skills/web-ui`](skills/web-ui/SKILL.md).
+Implementation: Next.js (static export), Tailwind CSS v4, Radix UI primitives, `motion`. How to build components and which bugs to avoid: skill [`skills/web-ui`](skills/web-ui/SKILL.md).
 
 ## Colors
 
-Tokeny kolorów są zdefiniowane w `web/src/app/globals.css` (`@theme` oraz `:root` dla warstw półprzezroczystych) i muszą być identyczne z tym plikiem; build sprawdza zgodność.
+Color tokens are defined in `web/src/app/globals.css` (`@theme` and `:root` for translucent layers) and must match this file; the build checks it.
 
-- **Ink (950–700):** tła. `ink-950` to tło strony, jaśniejsze stopnie tylko w gradientach i warstwach.
-- **Fg, fg-muted, fg-subtle:** trzy poziomy tekstu: nagłówki i treść, lead i opisy, podpisy i metadane.
-- **Brand (300–600) i cyan-400:** akcent marki. Gradient `brand-300 → brand-500 → cyan-400` wyłącznie na 1–3 słowach nagłówka.
-- **Hit, miss, focus:** kolory semantyczne o stałym znaczeniu: trafienie lub poprawny wynik, błąd lub odrzucony kandydat, element, na który ma patrzeć widz. Nie służą do dekoracji.
-- **Cat-1…4:** serie danych w wykresach, maksymalnie cztery, zawsze w tej kolejności.
-- **Primary, on-primary:** główny przycisk (biały tekst na `brand-600`, kontrast 5,8:1). Hover to rozjaśnienie o 10% (`brightness-110`), a nie `brand-500`: biały tekst na `brand-500` ma 3,9:1, poniżej WCAG AA.
-- **Line, line-strong, panel, panel-hi:** półprzezroczyste obramowania i tła paneli; działają na każdym fragmencie tła.
+- **Ink (950–700):** backgrounds. `ink-950` is the page background; lighter steps only in gradients and layers.
+- **Fg, fg-muted, fg-subtle:** three text levels: headings and body, lead and descriptions, captions and metadata.
+- **Brand (300–600) and cyan-400:** brand accent. Gradient `brand-300 → brand-500 → cyan-400` only on 1–3 heading words.
+- **Hit, miss, focus:** semantic colors with fixed meaning: hit or correct result, error or rejected candidate, element the viewer should look at. Never decorative.
+- **Cat-1…4:** data series in charts, at most four, always in this order.
+- **Primary, on-primary:** main button (white on `brand-600`, contrast 5.8:1). Hover is 10% brightening (`brightness-110`), not `brand-500`: white on `brand-500` is 3.9:1, below WCAG AA.
+- **Line, line-strong, panel, panel-hi:** translucent borders and panel backgrounds; work on any part of the background.
 
-W tokenach komponentów tła półprzezroczyste są podane jako kolor efektywny po nałożeniu na `ink-950` (np. panel `rgb(255 255 255 / 0.035)` → `#0e1427`), żeby dało się sprawdzić kontrast. Kontrast tekstu na tle strony: `fg` 17:1, `fg-muted` 9,7:1, `fg-subtle` 4,7:1.
+Component tokens give translucent backgrounds as the effective color over `ink-950` (e.g. panel `rgb(255 255 255 / 0.035)` → `#0e1427`) so contrast can be checked. Text contrast on the page background: `fg` 17:1, `fg-muted` 9.7:1, `fg-subtle` 4.7:1.
 
 ## Typography
 
-Geist dla tekstu, Geist Mono dla kodu, liczb w wizualizacjach i nadtytułów. Hierarchię buduje rozmiar, nie liczba krojów.
+Geist for text, Geist Mono for code, numbers in visualizations and eyebrows. Hierarchy comes from size, not from more typefaces.
 
-- **Display:** tylko tytuł otwierający stronę; rozmiar płynny `clamp(3rem, 9vw, 8rem)`, token podaje wartość maksymalną.
-- **Headline:** nagłówek sekcji, 36 px na telefonie, 60 px od `md`. Nagłówek jest tezą (np. „Token jest podstawową jednostką”), a nie nazwą tematu.
-- **Eyebrow:** nadtytuł nad nagłówkiem, mono, wersaliki, rozstrzelony, w formacie „NN · Temat”.
-- **Data:** liczby w tabelach i wizualizacjach zawsze z cyframi tabelarycznymi.
+- **Display:** only the page opening title; fluid size `clamp(3rem, 9vw, 8rem)`, the token gives the maximum.
+- **Headline:** section heading, 36 px on phone, 60 px from `md`. The heading is a thesis (e.g. „Token jest podstawową jednostką”), not a topic name.
+- **Eyebrow:** overline above the heading, mono, uppercase, tracked, format „NN · Topic”.
+- **Data:** numbers in tables and visualizations always with tabular figures.
 
 ## Layout
 
-- Kontener treści `container` (1280 px) z marginesem `gutter` (24 px); strony tekstowe (README, notebook) mają szerokość `reading-width`.
-- Sekcja prezentacji (slajd) ma co najmniej wysokość ekranu i odstęp `section-y` w pionie.
-- Siatki `lg:grid-cols-2` i `lg:grid-cols-4` składają się do jednej kolumny poniżej `lg`. Wizualizacje SVG mają `viewBox` i szerokość 100% kontenera.
-- Docelowe rozdzielczości do sprawdzenia: 1440×900 (projektor) i 390×844 (telefon).
+- Content container `container` (1280 px) with `gutter` (24 px); text pages (README, notebook) use `reading-width`.
+- A presentation section (slide) is at least screen height with `section-y` vertical spacing.
+- `lg:grid-cols-2` and `lg:grid-cols-4` grids collapse to one column below `lg`. SVG visualizations have `viewBox` and 100% container width.
+- Target resolutions: 1440×900 (projector) and 390×844 (phone).
 
 ## Elevation & Depth
 
-Głębię dają warstwy, nie cienie: rozmyte plamy światła w tle (paralaksa przy przewijaniu), półprzezroczyste panele z `backdrop-blur` i obramowaniem `line`. Cień `glow` (niebieska poświata) wyłącznie na głównym przycisku i aktywnym elemencie.
+Depth comes from layers, not shadows: blurred light blobs in the background (scroll parallax), translucent panels with `backdrop-blur` and a `line` border. `glow` shadow (blue halo) only on the main button and the active element.
 
 ## Shapes
 
-Zaokrąglenia: `card` dla paneli i kart, `chip` dla tokenów i małych etykiet, `full` dla przycisków, przełączników i plakietek. Linie wykresów zaokrąglone (`stroke-linecap: round`).
+Radii: `card` for panels and cards, `chip` for tokens and small labels, `full` for buttons, toggles and badges. Chart lines rounded (`stroke-linecap: round`).
 
 ## Components
 
-Komponenty w podziale atomic design (`web/src/components/`): atomy w `ui/`, molekuły w `molecules/`, organizmy w `viz/`, `site/`, `lesson/` i `notebook/`. Tokeny komponentów w nagłówku pliku odpowiadają ich klasom Tailwind.
+Atomic design in `web/src/components/`: atoms in `ui/`, molecules in `molecules/`, organisms in `viz/`, `site/`, `lesson/` and `notebook/`. Component tokens in the front matter map to their Tailwind classes.
 
-- **Panel:** podstawa każdej karty, okna kodu i wizualizacji.
-- **Section heading:** eyebrow + headline (pierwsze 1–3 słowa gradientem) + lead.
-- **Code block i terminal:** kod z podświetleniem składni obok prawdziwego wyniku z notebooka, podpisanego nazwą modelu.
-- **Callout:** jedna myśl na slajd; `insight` (żółta krawędź) do zapamiętania, `warning` (różowa krawędź) dla pułapki.
-- **Przyciski:** `primary` dla głównej akcji, `ghost` dla pozostałych.
+- **Panel:** base of every card, code window and visualization.
+- **Section heading:** eyebrow + headline (first 1–3 words in gradient) + lead.
+- **Code block and terminal:** syntax-highlighted code next to the real notebook output, labeled with the model name.
+- **Callout:** one idea per slide; `insight` (yellow edge) to remember, `warning` (pink edge) for a pitfall.
+- **Buttons:** `primary` for the main action, `ghost` for the rest.
 
-Linter zgłasza kolory `ink-*`, `cat-*`, `hit`, `miss` itp. jako nieużywane przez komponenty. To zamierzone: używają ich wizualizacje danych, które nie mają tokenów komponentów.
+The linter reports `ink-*`, `cat-*`, `hit`, `miss` etc. as unused by components. Intended: data visualizations use them and have no component tokens.
 
 ## Do's and Don'ts
 
-- Do: kolory tylko z tokenów; nowy kolor najpierw w tym pliku i w `globals.css`.
-- Do: liczby i kod na slajdach z prawdziwych uruchomień notebooka.
-- Do: jedna teza na slajd, maksymalnie ok. 40 słów tekstu ciągłego poza kodem.
-- Do: interakcje przez prymitywy Radix (dostępność z klawiatury), z etykietą na elemencie, który ma rolę (np. `Slider.Thumb`).
-- Don't: hex wpisany w komponencie, nowa biblioteka UI, zrzuty ekranu kodu zamiast tekstu.
-- Don't: animacja, która nie pokazuje żadnego kroku procesu; karuzele, autoodtwarzanie, dźwięk.
-- Don't: emoji jako ozdoba nagłówków i ramek.
+- Do: colors only from tokens; a new color goes first into this file and `globals.css`.
+- Do: numbers and code on slides from real notebook runs.
+- Do: one thesis per slide, max ~40 words of running text excluding code.
+- Do: interactions via Radix primitives (keyboard accessibility), labeled on the element with the role (e.g. `Slider.Thumb`).
+- Don't: hex in a component, a new UI library, screenshots of code instead of text.
+- Don't: animation that shows no process step; carousels, autoplay, sound.
+- Don't: emoji as decoration of headings and frames.

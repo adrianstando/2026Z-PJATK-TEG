@@ -41,7 +41,7 @@ Notebooki można uruchomić w przeglądarce, bez instalacji, albo lokalnie:
 
 | Termin | Nr | Zajęcia | Zakres | Na koniec | Materiały |
 |--------|----|---------|--------|-----------|-----------|
-| przed 1. | 0 | [Dostęp do LLM](00-dostep-do-llm/README.md) | GitHub Models, Azure for Students, OpenAI, Anthropic, Ollama, teg-proxy; wywołania z Pythona | — | [instrukcja](00-dostep-do-llm/README.md) |
+| przed 1. | 0 | [Dostęp do LLM](00-dostep-do-llm/README.md) | Azure for Students, Ollama, OpenAI, Anthropic, teg-proxy; wywołania z Pythona | — | [instrukcja](00-dostep-do-llm/README.md) |
 | TBA | 1 | [LLM i embeddingi](01-llm-embeddingi/README.md) | - Proces generowania tekstu, tokeny, koszt <br> - Wywołanie modelu z Pythona, prosty agent <br> - Embeddingi, miary podobieństwa, wyszukiwanie wektorowe | **[zadanie](01-llm-embeddingi/zadanie.ipynb)** | [prezentacja](https://adrianstando.github.io/2026Z-PJATK-TEG/zajecia/01-llm-embeddingi/) · [notebook](https://adrianstando.github.io/2026Z-PJATK-TEG/notebook/01-llm-embeddingi/) · [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adrianstando/2026Z-PJATK-TEG/blob/main/01-llm-embeddingi/notebook.ipynb) |
 | TBA | 2 | [RAG](02-rag/README.md) | - Chunking <br> - Chroma i filtrowanie po metadanych <br> - Wyszukiwanie hybrydowe (BM25) i reranking <br> - Ewaluacja (RAGAS) | — | w przygotowaniu |
 | TBA | 3 | [Agenci](03-agenci/README.md) | - Tool calling <br> - ReAct w LangGraph <br> - Pamięć <br> - Agentic RAG | — | w przygotowaniu |

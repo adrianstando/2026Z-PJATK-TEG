@@ -7,7 +7,6 @@ Dostęp do co najmniej jednego modelu należy skonfigurować przed pierwszymi za
 | Opcja | Koszt | Czat | Embeddingi | Uwagi |
 |---|---|---|---|---|
 | [GitHub Copilot](#github-copilot) | darmowy dla studentów (Student Developer Pack) | ✅ | ❌ | najlepsze modele bez opłat; z Pythona przez Copilot SDK albo proxy |
-| [GitHub Models](#github-models) | darmowe | ✅ | ✅ | wystarczy konto GitHub; dzienne limity zapytań |
 | [Ollama](#ollama) | darmowe, lokalnie | ✅ | ✅ | wymaga mocnego komputera; modele wyraźnie słabsze od komercyjnych |
 | [Azure for Students](#azure-for-students) | 100 USD na 12 miesięcy | ✅ | ✅ | brak najnowszych modeli; dostępność zależy od regionu |
 | [Proxy dla subskrypcji](#proxy-dla-subskrypcji) | w ramach subskrypcji Copilot / Claude / ChatGPT | ✅ | ❌ | tylko na własnym komputerze |
@@ -15,7 +14,7 @@ Dostęp do co najmniej jednego modelu należy skonfigurować przed pierwszymi za
 | [OpenRouter](#deepseek-i-openrouter) | płatne; część modeli darmowa | ✅ | ✅ | jeden klucz do modeli wielu dostawców |
 | [OpenAI, Anthropic](#openai-i-anthropic) | płatne | ✅ | ✅ (OpenAI) | najnowsze modele |
 
-**Zalecenie:** GitHub Copilot do czatu i agentów, a do embeddingów GitHub Models albo Ollama.
+**Zalecenie:** GitHub Copilot do czatu i agentów, a do embeddingów Ollama, Azure albo OpenAI.
 
 Wszystkie opcje poza samym Copilot SDK udostępniają API zgodne z OpenAI, więc kod z zajęć działa z każdą z nich. W notebookach dostawcę wybiera się zmienną `LLM_PROVIDER` w pliku `.env`:
 
@@ -34,25 +33,10 @@ W ramach [GitHub Student Developer Pack](https://education.github.com/pack) stud
 1. Zgłoszenie do Student Developer Pack z adresu uczelnianego; weryfikacja trwa zwykle od kilku godzin do kilku dni.
 2. Instalacja Copilot CLI i logowanie: `copilot login`.
 3. Użycie z Pythona na jeden z dwóch sposobów:
-   - bezpośrednio przez [Copilot SDK](examples/07_copilot_sdk.py) (`pip install github-copilot-sdk`),
+   - bezpośrednio przez [Copilot SDK](examples/06_copilot_sdk.py) (`pip install github-copilot-sdk`),
    - przez [proxy dla subskrypcji](#proxy-dla-subskrypcji), które udostępnia Copilota jako API zgodne z OpenAI. Wtedy działa cały kod z notebooków (`LLM_PROVIDER=proxy`).
 
-Copilot nie udostępnia embeddingów, więc do nich potrzebny jest GitHub Models albo Ollama.
-
-## GitHub Models
-
-Darmowy dostęp do modeli OpenAI i innych dostawców przez konto GitHub. Działa w Colabie, Deepnote i lokalnie.
-
-1. [Settings → Developer settings → Personal access tokens → Fine-grained tokens](https://github.com/settings/personal-access-tokens) → *Generate new token*.
-2. Ważność do końca semestru; w *Permissions → Account permissions* uprawnienie **Models: Read-only**.
-3. Wpis w `.env`:
-   ```
-   LLM_PROVIDER=github
-   GITHUB_TOKEN=github_pat_...
-   ```
-4. Test: `python examples/01_github_models.py`.
-
-Modele: `openai/gpt-4.1-mini`, `openai/gpt-5-nano`, `openai/text-embedding-3-small` i [inne](https://github.com/marketplace?type=models). Dzienne limity są niskie, ale wystarczają na zajęcia.
+Copilot nie udostępnia embeddingów, więc do nich potrzebna jest Ollama, Azure albo OpenAI.
 
 ## Ollama
 
@@ -66,7 +50,7 @@ Modele działają lokalnie: bez opłat, bez konta i bez internetu. Wymagany mocn
    ollama pull embeddinggemma    # embeddingi (~0,6 GB)
    ```
 3. Wpis w `.env`: `LLM_PROVIDER=ollama`.
-4. Test: `python examples/08_ollama.py`.
+4. Test: `python examples/07_ollama.py`.
 
 Modele lokalne są dużo słabsze od komercyjnych, ale wystarczają do zrozumienia mechaniki i nie mają limitów zapytań.
 
@@ -85,7 +69,7 @@ Subskrypcja studencka nie daje dostępu do najnowszych modeli. Dostępne są mni
    AZURE_OPENAI_ENDPOINT=https://<zasob>.openai.azure.com/
    AZURE_OPENAI_API_KEY=...
    ```
-5. Test: `python examples/02_azure_openai.py`.
+5. Test: `python examples/01_azure_openai.py`.
 
 Błąd `Insufficient quota` oznacza, że dany model ma w subskrypcji limit 0. Rozwiązaniem jest inny model albo inny region.
 
@@ -113,8 +97,8 @@ W notebookach: `LLM_PROVIDER=proxy`. Proxy nie liczy embeddingów; do nich słu�
 
 ## DeepSeek i OpenRouter
 
-- **[DeepSeek](https://platform.deepseek.com):** bardzo tanie API zgodne z OpenAI (`base_url="https://api.deepseek.com"`, modele `deepseek-chat` i `deepseek-reasoner`). Brak embeddingów. Dane przetwarzane są na serwerach w Chinach, więc nie nadaje się do danych wrażliwych. `LLM_PROVIDER=deepseek`, `DEEPSEEK_API_KEY=...`. Przykład: [`examples/10_deepseek.py`](examples/10_deepseek.py).
-- **[OpenRouter](https://openrouter.ai):** jeden klucz do modeli wielu dostawców; część modeli (oznaczonych `:free`) jest darmowa z limitami. Przykład: [`examples/11_openrouter.py`](examples/11_openrouter.py).
+- **[DeepSeek](https://platform.deepseek.com):** bardzo tanie API zgodne z OpenAI (`base_url="https://api.deepseek.com"`, modele `deepseek-chat` i `deepseek-reasoner`). Brak embeddingów. Dane przetwarzane są na serwerach w Chinach, więc nie nadaje się do danych wrażliwych. `LLM_PROVIDER=deepseek`, `DEEPSEEK_API_KEY=...`. Przykład: [`examples/09_deepseek.py`](examples/09_deepseek.py).
+- **[OpenRouter](https://openrouter.ai):** jeden klucz do modeli wielu dostawców; część modeli (oznaczonych `:free`) jest darmowa z limitami. Przykład: [`examples/10_openrouter.py`](examples/10_openrouter.py).
 
 ## OpenAI i Anthropic
 
@@ -135,19 +119,18 @@ Wszystkie w katalogu [`examples/`](examples/):
 
 | Plik | Zawartość | Instalacja |
 |---|---|---|
-| [`01_github_models.py`](examples/01_github_models.py) | czat i embeddingi przez GitHub Models | `pip install openai python-dotenv` |
-| [`02_azure_openai.py`](examples/02_azure_openai.py) | Azure OpenAI (`AzureOpenAI`, deploymenty) | jw. |
-| [`03_openai.py`](examples/03_openai.py) | OpenAI API, `usage` i tokeny rozumowania | jw. |
-| [`04_anthropic.py`](examples/04_anthropic.py) | Anthropic Messages API: inny kształt odpowiedzi | `pip install anthropic` |
-| [`05_claude_agent_sdk.py`](examples/05_claude_agent_sdk.py) | agent Claude Code z Pythona, czytający pliki w katalogu | `pip install claude-agent-sdk` + Claude Code |
-| [`06_codex_sdk.py`](examples/06_codex_sdk.py) | agent OpenAI Codex z Pythona | `pip install openai-codex` + Codex |
-| [`07_copilot_sdk.py`](examples/07_copilot_sdk.py) | GitHub Copilot z Pythona | `pip install github-copilot-sdk` + Copilot CLI |
-| [`08_ollama.py`](examples/08_ollama.py) | modele lokalne, ten sam klient `OpenAI` | Ollama |
-| [`09_teg_proxy.py`](examples/09_teg_proxy.py) | subskrypcje przez proxy | uruchomione proxy |
-| [`10_deepseek.py`](examples/10_deepseek.py) | DeepSeek | `pip install openai python-dotenv` |
-| [`11_openrouter.py`](examples/11_openrouter.py) | OpenRouter | jw. |
+| [`01_azure_openai.py`](examples/01_azure_openai.py) | Azure OpenAI (`AzureOpenAI`, deploymenty) | `pip install openai python-dotenv` |
+| [`02_openai.py`](examples/02_openai.py) | OpenAI API, `usage` i tokeny rozumowania | jw. |
+| [`03_anthropic.py`](examples/03_anthropic.py) | Anthropic Messages API: inny kształt odpowiedzi | `pip install anthropic` |
+| [`04_claude_agent_sdk.py`](examples/04_claude_agent_sdk.py) | agent Claude Code z Pythona, czytający pliki w katalogu | `pip install claude-agent-sdk` + Claude Code |
+| [`05_codex_sdk.py`](examples/05_codex_sdk.py) | agent OpenAI Codex z Pythona | `pip install openai-codex` + Codex |
+| [`06_copilot_sdk.py`](examples/06_copilot_sdk.py) | GitHub Copilot z Pythona | `pip install github-copilot-sdk` + Copilot CLI |
+| [`07_ollama.py`](examples/07_ollama.py) | modele lokalne, ten sam klient `OpenAI` | Ollama |
+| [`08_teg_proxy.py`](examples/08_teg_proxy.py) | subskrypcje przez proxy | uruchomione proxy |
+| [`09_deepseek.py`](examples/09_deepseek.py) | DeepSeek | `pip install openai python-dotenv` |
+| [`10_openrouter.py`](examples/10_openrouter.py) | OpenRouter | jw. |
 
-Przykłady 01–04 i 08–11 to zwykłe API: wiadomości na wejściu, tekst na wyjściu. Przykłady 05–07 to **agenci**: dostają zadanie, samodzielnie wybierają narzędzia (odczyt plików, terminal) i działają w pętli. Ich SDK wymagają zainstalowanego w systemie programu agenta (`claude`, `codex`, `copilot`), ponieważ uruchamiają go pod spodem.
+Przykłady 01–03 i 07–10 to zwykłe API: wiadomości na wejściu, tekst na wyjściu. Przykłady 04–06 to **agenci**: dostają zadanie, samodzielnie wybierają narzędzia (odczyt plików, terminal) i działają w pętli. Ich SDK wymagają zainstalowanego w systemie programu agenta (`claude`, `codex`, `copilot`), ponieważ uruchamiają go pod spodem.
 
 ## Środowisko do notebooków
 

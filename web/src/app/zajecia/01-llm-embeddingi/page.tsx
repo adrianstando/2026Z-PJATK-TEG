@@ -25,7 +25,6 @@ import { colabUrl } from "@/lib/paths";
 export const metadata: Metadata = { title: "Zajęcia 1 · LLM i embeddingi" };
 
 const AGENDA = [
-  { label: "Projekt", id: "projekt" },
   { label: "Generowanie tekstu", id: "generowanie" },
   { label: "Tokeny", id: "tokeny" },
   { label: "Wywołanie z Pythona", id: "api" },
@@ -36,6 +35,7 @@ const AGENDA = [
   { label: "Miary podobieństwa", id: "miary" },
   { label: "Kontekst", id: "kontekst" },
   { label: "Wyszukiwanie wektorowe", id: "wyszukiwanie" },
+  { label: "Projekt", id: "projekt" },
   { label: "Zadanie", id: "zadanie" },
 ];
 
@@ -65,34 +65,10 @@ export default function Lesson01() {
           </Reveal>
         </Slide>
 
-        {/* ---------- Projekt ---------- */}
-        <Slide id="projekt">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <SectionHeading
-                eyebrow="01 · Projekt"
-                accent="GraphRAG:"
-                title="wiedza zapisana jako graf"
-                lead="Dokumenty zamienione na graf encji i relacji (Neo4j). System odpowiada na pytania wymagające połączenia kilku faktów, z którymi zwykłe wyszukiwanie fragmentów tekstu sobie nie radzi. Szczegóły i zasady projektu na kolejnych zajęciach."
-              />
-              <Reveal delay={0.3} className="mt-8">
-                <Callout>
-                  Korzystanie z agentów kodujących jest dozwolone pod warunkiem rzetelnej konfiguracji: skille, pliki <code>CLAUDE.md</code> / <code>AGENTS.md</code>, pluginy, opis sposobu pracy w repozytorium.
-                </Callout>
-              </Reveal>
-            </div>
-            <Reveal delay={0.2}>
-              <Panel className="p-6">
-                <MiniGraph />
-              </Panel>
-            </Reveal>
-          </div>
-        </Slide>
-
         {/* ---------- Generowanie ---------- */}
         <Slide id="generowanie">
           <SectionHeading
-            eyebrow="02 · Generowanie tekstu"
+            eyebrow="01 · Generowanie tekstu"
             accent="Proces generowania:"
             title="token po tokenie, losowo"
             lead="Model wyznacza prawdopodobieństwo każdego możliwego kolejnego tokenu, a następnie losuje jeden z nich. Temperatura, top-k i top-p zmieniają rozkład, z którego odbywa się losowanie."
@@ -110,7 +86,7 @@ export default function Lesson01() {
         {/* ---------- Tokeny ---------- */}
         <Slide id="tokeny">
           <SectionHeading
-            eyebrow="03 · Tokeny"
+            eyebrow="02 · Tokeny"
             accent="Token"
             title="jest podstawową jednostką"
             lead="Tokenizer dzieli tekst na fragmenty ze słownika (ok. 200 tys. pozycji). Słownik powstał na korpusie zdominowanym przez angielski, więc angielski dzieli się na mniej, dłuższych fragmentów. Ten sam tekst po polsku to więcej tokenów: wyższy koszt i mniej miejsca w kontekście."
@@ -123,10 +99,10 @@ export default function Lesson01() {
         {/* ---------- Wywołanie ---------- */}
         <Slide id="api">
           <SectionHeading
-            eyebrow="04 · API"
+            eyebrow="03 · API"
             accent="Wywołanie modelu"
             title="z Pythona"
-            lead="System prompt ustawia rolę i format, wiadomość użytkownika zawiera pytanie. Ten sam kod działa z GitHub Models, Azure, OpenAI i Ollamą; zmienia się tylko adres klienta."
+            lead="System prompt ustawia rolę i format, wiadomość użytkownika zawiera pytanie. Ten sam kod działa z OpenAI, Azure, Ollamą i proxy dla subskrypcji; zmienia się tylko adres klienta."
           />
           <div className="mt-12 grid gap-6 lg:grid-cols-2">
             <Reveal delay={0.1}>
@@ -138,7 +114,7 @@ export default function Lesson01() {
               />
             </Reveal>
             <Reveal delay={0.3} className="lg:mt-[3.25rem]">
-              <Terminal output={S.NB["first-call"].output} title={`${S.MODELS.chat} · Ollama`} />
+              <Terminal output={S.NB["first-call"].output} title={`${S.MODELS.chat} · ${S.PROVIDERS.chat}`} />
             </Reveal>
           </div>
         </Slide>
@@ -146,7 +122,7 @@ export default function Lesson01() {
         {/* ---------- Agent ---------- */}
         <Slide id="agent">
           <SectionHeading
-            eyebrow="05 · Prosty agent"
+            eyebrow="04 · Prosty agent"
             accent="Agent"
             title="= model + narzędzia + pętla"
             lead="Model nie zna dzisiejszej daty. Może jednak poprosić o wywołanie funkcji: zwraca jej nazwę i argumenty, kod ją wykonuje i odsyła wynik. Pętla trwa, dopóki model nie odpowie tekstem."
@@ -171,10 +147,10 @@ export default function Lesson01() {
           <div className="grid items-start gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <SectionHeading
-                eyebrow="06 · Koszt"
+                eyebrow="05 · Koszt"
                 accent="Koszt generowania"
                 title="obejmuje też rozumowanie"
-                lead="Modele rozumujące przed odpowiedzią generują ukryte tokeny rozumowania. W przykładzie obok 576 z 847 tokenów odpowiedzi to rozumowanie. Rozliczane są wszystkie."
+                lead={`Modele rozumujące przed odpowiedzią generują ukryte tokeny rozumowania. W przykładzie obok ${S.USAGE.reasoning} z ${S.USAGE.completion} tokenów odpowiedzi to rozumowanie. Rozliczane są wszystkie.`}
               />
               <Reveal delay={0.3} className="mt-8">
                 <Callout kind="warning">
@@ -184,13 +160,13 @@ export default function Lesson01() {
             </div>
             <div className="space-y-4">
               <Reveal delay={0.1}>
-                <Terminal output={S.REFERENCE.usageOut} title={S.REFERENCE.usageModel} />
+                <Terminal output={S.NB.usage.output} title={`${S.MODELS.chat} · pierwsze wywołanie`} />
               </Reveal>
               <Reveal delay={0.25}>
                 <ReasoningBar />
               </Reveal>
               <Reveal delay={0.4}>
-                <Terminal output={S.NB.limit.output} title={`${S.MODELS.chat} · limit 15 i 1000 tokenów`} />
+                <Terminal output={S.NB.limit.output} title={`${S.MODELS.chat} · limity 15, 300 i 2000 tokenów`} />
               </Reveal>
             </div>
           </div>
@@ -200,7 +176,7 @@ export default function Lesson01() {
         <Slide id="embedding">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <SectionHeading
-              eyebrow="07 · Embeddingi"
+              eyebrow="06 · Embeddingi"
               accent="Znaczenie"
               title="jako punkt w przestrzeni"
               lead="Model embeddingów zamienia tekst na wektor o stałej długości: 1536 liczb w text-embedding-3-small, 768 w lokalnej EmbeddingGemmie. Teksty o podobnym znaczeniu dają bliskie wektory."
@@ -210,7 +186,7 @@ export default function Lesson01() {
                 <CodeBlock code={S.NB.embedding.code} title="notebook.ipynb · embed()" highlight={[9]} />
               </Reveal>
               <Reveal delay={0.25}>
-                <Terminal output={S.NB.embedding.output} title={`${S.MODELS.embed} · Ollama`} />
+                <Terminal output={S.NB.embedding.output} title={`${S.MODELS.embed} · ${S.PROVIDERS.embed}`} />
               </Reveal>
             </div>
           </div>
@@ -218,7 +194,7 @@ export default function Lesson01() {
 
         <Slide id="przestrzen">
           <SectionHeading
-            eyebrow="08 · Przestrzeń"
+            eyebrow="07 · Przestrzeń"
             accent="24 słowa,"
             title="cztery grupy bez etykiet"
             lead="Model nie dostał informacji, że „pociąg” i „autobus” to transport. Grupy wynikają z tego, jak słowa są używane w tekstach."
@@ -230,10 +206,10 @@ export default function Lesson01() {
 
         <Slide id="miary">
           <SectionHeading
-            eyebrow="09 · Miary podobieństwa"
+            eyebrow="08 · Miary podobieństwa"
             accent="Cosinus, iloczyn,"
             title="odległość"
-            lead="Cosinus zależy tylko od kąta między wektorami. Iloczyn skalarny i odległości zależą też od długości. Dla wektorów o długości 1, takich jak embeddingi z API, wszystkie dają ten sam ranking."
+            lead="Cosinus zależy tylko od kąta między wektorami. Iloczyn skalarny i odległości zależą też od długości. Dla wektorów o długości 1, takich jak embeddingi z API, wszystkie dają ten sam ranking. Cosinus ma zakres od −1 do 1, a odległość cosinusowa (1 − cos) od 0 do 2."
           />
           <Reveal delay={0.2} className="mt-12">
             <VectorSpace3D />
@@ -242,19 +218,18 @@ export default function Lesson01() {
 
         <Slide id="kontekst">
           <SectionHeading
-            eyebrow="10 · Kontekst"
+            eyebrow="09 · Kontekst"
             accent="Kot"
             title="bliżej psa czy kotka?"
-            lead="Ten sam eksperyment w dwóch modelach. W text-embedding-3-small samo słowo „cat” jest bliżej „dog”, a kolejność odwraca dopiero zdanie. W EmbeddingGemmie „kitten” jest bliżej od razu."
+            lead="Liczymy embeddingi słów „cat”, „dog” i „kitten”: najpierw samych, potem wstawionych w trzy zdania (np. „I love my [X] very much”). Pytanie: czy „cat” jest bliżej „kitten” (to samo zwierzę), czy „dog” (inne zwierzę domowe)? W text-embedding-3-small samo słowo „cat” wypada bliżej „dog”; dopiero w zdaniu bliżej jest „kitten”. W EmbeddingGemmie „kitten” wygrywa w każdym wariancie."
           />
           <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
             <div className="space-y-4">
-              <Reveal delay={0.1}>
-                <Terminal output={S.REFERENCE.contextOut} title={S.REFERENCE.contextModel} wrap={false} />
-              </Reveal>
-              <Reveal delay={0.25}>
-                <Terminal output={S.NB.context.output} title={`${S.MODELS.embed} (Ollama, lokalnie)`} wrap={false} />
-              </Reveal>
+              {S.CONTEXT.map((c, i) => (
+                <Reveal key={c.model} delay={0.1 + i * 0.15}>
+                  <Terminal output={c.output} title={c.model} wrap={false} />
+                </Reveal>
+              ))}
             </div>
             <Reveal delay={0.2}>
               <ContextSpace />
@@ -268,7 +243,7 @@ export default function Lesson01() {
         {/* ---------- Wyszukiwanie ---------- */}
         <Slide id="wyszukiwanie">
           <SectionHeading
-            eyebrow="11 · Baza wektorowa"
+            eyebrow="10 · Baza wektorowa"
             accent="Wyszukiwanie"
             title="to porównanie wektora z wektorami"
             lead="Zapytanie → embedding → cosinus z każdym dokumentem → k najlepszych. Bazy wektorowe przyspieszają ostatni krok, żeby nie porównywać zapytania z milionem wektorów po kolei."
@@ -284,6 +259,30 @@ export default function Lesson01() {
               <Callout kind="warning">
                 Pytanie „Dlaczego jabłko spada na ziemię?” zwraca na pierwszym miejscu Darwina i dżdżownice, a nie Newtona. Embedding łączy „ziemię” z „glebą”, ale nie rozumie pytania. Poprawki na zajęciach 2: wyszukiwanie hybrydowe z BM25 i reranking.
               </Callout>
+            </Reveal>
+          </div>
+        </Slide>
+
+        {/* ---------- Projekt ---------- */}
+        <Slide id="projekt">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <SectionHeading
+                eyebrow="11 · Projekt"
+                accent="GraphRAG:"
+                title="wiedza zapisana jako graf"
+                lead="Dokumenty zamienione na graf encji i relacji (Neo4j). System odpowiada na pytania wymagające połączenia kilku faktów, z którymi zwykłe wyszukiwanie fragmentów tekstu sobie nie radzi. Szczegóły i zasady projektu na kolejnych zajęciach."
+              />
+              <Reveal delay={0.3} className="mt-8">
+                <Callout>
+                  Korzystanie z agentów kodujących jest dozwolone pod warunkiem rzetelnej konfiguracji: skille, pliki <code>CLAUDE.md</code> / <code>AGENTS.md</code>, pluginy, opis sposobu pracy w repozytorium.
+                </Callout>
+              </Reveal>
+            </div>
+            <Reveal delay={0.2}>
+              <Panel className="p-6">
+                <MiniGraph />
+              </Panel>
             </Reveal>
           </div>
         </Slide>
@@ -338,18 +337,24 @@ function EndCard(props: { delay: number; icon: React.ReactNode; title: string; t
 }
 
 function ReasoningBar() {
+  const { prompt, completion, reasoning } = S.USAGE;
+  const total = prompt + completion;
+  const answer = completion - reasoning;
+  if (!total) return null;
   return (
     <Panel className="p-5">
       <div className="flex h-10 overflow-hidden rounded-lg font-mono text-xs">
-        <div className="bg-cat-1/80" style={{ width: `${(30 / 877) * 100}%` }} />
-        <div className="flex items-center justify-center bg-focus/80 text-ink-950" style={{ width: `${(576 / 877) * 100}%` }}>
-          rozumowanie 576
+        <div className="bg-cat-1/80" style={{ width: `${(prompt / total) * 100}%` }} />
+        <div className="flex items-center justify-center bg-focus/80 text-ink-950" style={{ width: `${(reasoning / total) * 100}%` }}>
+          rozumowanie {reasoning}
         </div>
-        <div className="flex items-center justify-center bg-cat-2/80 text-ink-950" style={{ width: `${(271 / 877) * 100}%` }}>
-          odpowiedź 271
+        <div className="flex items-center justify-center bg-cat-2/80 text-ink-950" style={{ width: `${(answer / total) * 100}%` }}>
+          odpowiedź {answer}
         </div>
       </div>
-      <p className="mt-3 text-xs text-fg-subtle">prompt: 30 tokenów · razem: 877</p>
+      <p className="mt-3 text-xs text-fg-subtle">
+        prompt: {prompt} tokenów · razem: {total}
+      </p>
     </Panel>
   );
 }

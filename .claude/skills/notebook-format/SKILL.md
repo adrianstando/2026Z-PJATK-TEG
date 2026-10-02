@@ -1,76 +1,76 @@
 ---
 name: notebook-format
 description: >
-  Zasady formatu notebooków Jupyter w tym repo, dzięki którym notebook poprawnie wyświetla się na stronie
-  (/notebook/<slug>/) i zasila slajdy prezentacji. Do użycia przy tworzeniu lub zmianie pliku .ipynb
-  w folderze zajęć oraz przy diagnozowaniu, dlaczego notebook źle wygląda na stronie.
+  Format rules for Jupyter notebooks in this repo so they render correctly on the site
+  (/notebook/<slug>/) and feed the presentation slides. Use when creating or editing an .ipynb
+  in a lesson folder, or when diagnosing why a notebook renders badly on the site.
 ---
 
 # notebook-format
 
-Strona nie uruchamia notebooków. W czasie builda czyta zapisane w `.ipynb` komórki i ich wyniki:
+The site never runs notebooks. At build time it reads cells and saved outputs from `.ipynb`:
 
-- `web/src/lib/notebooks.ts` renderuje cały notebook na stronie `/notebook/<slug>/` (oraz `zadanie.ipynb` na `/notebook/<slug>-zadanie/`),
-- `web/scripts/sync-notebooks.mjs` wyciąga komórki z tagiem `web:<klucz>` do `web/src/content/generated/<folder>.json`, skąd biorą je slajdy.
+- `web/src/lib/notebooks.ts` renders the whole notebook at `/notebook/<slug>/` (and `zadanie.ipynb` at `/notebook/<slug>-zadanie/`),
+- `web/scripts/sync-notebooks.mjs` extracts cells tagged `web:<key>` into `web/src/content/generated/<folder>.json`, which the slides read.
 
-Notebook jest więc źródłem prawdy, a to, co widać na stronie, to dokładnie to, co jest zapisane w pliku.
+The notebook is the source of truth: the site shows exactly what is saved in the file.
 
-## Pliki i nazwy
+## Files and names
 
-- Folder zajęć `NN-slug/` z `notebook.ipynb` (przykłady) i opcjonalnie `zadanie.ipynb`.
-- Folder musi być wpisany w `LESSONS` w `web/src/content/course.ts` (pole `folder`); flagi `notebook` i `task` włączają linki na karcie zajęć.
+- Lesson folder `NN-slug/` with `notebook.ipynb` (examples) and optional `zadanie.ipynb` (assignment).
+- The folder must be listed in `LESSONS` in `web/src/content/course.ts` (`folder` field); flags `notebook` and `task` enable links on the lesson card.
 
-## Struktura
+## Structure
 
-1. **Pierwsza komórka markdown zaczyna się od `# Tytuł`.** Tytuł trafia do nagłówka strony; sam `#` nie jest powtarzany w treści.
-2. **Każdy `##` zaczyna nową sekcję**, czyli osobną planszę z nawigacją strzałkami ← →. Nagłówek `##` musi być **pierwszą linią komórki**, bo tekst nad nim trafiłby do nowej sekcji.
-3. `###` i niższe nie dzielą na plansze; służą do podziału wewnątrz sekcji.
-4. Sekcja to 1 temat: krótki opis, 1–3 komórki kodu, ewentualnie ćwiczenie.
+1. **First markdown cell starts with `# Title`.** The title goes to the page header; the `#` is not repeated in the body.
+2. **Each `##` starts a new section**, i.e. a separate board with ← → navigation. The `##` heading must be **the first line of the cell**, otherwise text above it lands in the previous section.
+3. `###` and lower do not split boards; use them inside a section.
+4. One section = one topic: short description, 1–3 code cells, optional exercise.
 
 ## Markdown
 
-Obsługiwane (GitHub Flavored Markdown): nagłówki, listy, tabele, cytaty `>`, pogrubienie, kursywa, kod w tekście, bloki kodu z językiem, linki, obrazki z adresem `https://`.
+Supported (GitHub Flavored Markdown): headings, lists, tables, `>` quotes, bold, italics, inline code, fenced code with language, links, images with `https://` URLs.
 
-Nieobsługiwane, nie używać:
+Not supported, do not use:
 
-- **LaTeX** (`$...$`, `$$...$$`): wyświetli się jako surowy tekst. Wzory zapisywać zwykłym tekstem (`2 − 2·cos(a, b)`) albo jako kod.
-- **HTML w markdownie** (`<br>`, `<div>`, `<img>`): nie jest renderowany.
-- **Obrazki z lokalnej ścieżki** (`![](rysunek.png)`): link prowadzi do podglądu na GitHubie, a nie do pliku obrazu. Używać adresu `https://raw.githubusercontent.com/...` albo wygenerować wykres w komórce kodu.
+- **LaTeX** (`$...$`, `$$...$$`): shows as raw text. Write formulas as plain text (`2 − 2·cos(a, b)`) or as code.
+- **HTML in markdown** (`<br>`, `<div>`, `<img>`): not rendered.
+- **Images from local paths** (`![](figure.png)`): the link points to the GitHub preview, not the image. Use `https://raw.githubusercontent.com/...` or generate the plot in a code cell.
 
-Linki względne (`../00-dostep-do-llm/README.md`, `zadanie.ipynb`) są zamieniane na adresy w repozytorium na GitHubie.
+Relative links (`../00-dostep-do-llm/README.md`, `zadanie.ipynb`) are rewritten to GitHub repository URLs.
 
-## Komórki kodu i wyniki
+## Code cells and outputs
 
-- **Notebook commitowany z wynikami**, uruchomiony od góry do dołu w świeżym kernelu:
+- **Commit notebooks with outputs**, executed top to bottom in a fresh kernel:
   ```bash
   jupyter nbconvert --to notebook --execute --inplace NN-slug/notebook.ipynb
   ```
-- Wyświetlane typy wyników: tekst (`print`, wartość ostatniego wyrażenia), obrazy PNG/JPEG (wykresy matplotlib), błędy. Kolory ANSI są usuwane.
-- Niewyświetlane: wyniki HTML (tabele pandas pokażą się jako tekst), widgety, wykresy interaktywne (plotly, bokeh). Do wykresów matplotlib z `plt.show()`.
-- Pusta komórka kodu wyświetla się jako ramka „miejsce na własny kod”; tak oznacza się miejsce na ćwiczenie.
-- Długie wyniki są przewijane w oknie o stałej wysokości. Do slajdów wyniki krótkie: kilkanaście linii, bez list setek liczb.
-- Wykresy są osadzane w stronie jako obraz; rozmiar umiarkowany (`figsize` do ok. 14×6, domyślne `dpi`).
+- Rendered output types: text (`print`, last expression value), PNG/JPEG images (matplotlib), errors. ANSI colors are stripped.
+- Not rendered: HTML outputs (pandas tables show as text), widgets, interactive plots (plotly, bokeh). Use matplotlib with `plt.show()`.
+- An empty code cell renders as a "place for your code" box; use it to mark exercises.
+- Long outputs scroll in a fixed-height box. Outputs for slides must be short: a dozen lines, no lists of hundreds of numbers.
+- Plots are embedded as images; moderate size (`figsize` up to ~14×6, default `dpi`).
 
-## Bezpieczeństwo wyników
+## Output safety
 
-- Żadnych kluczy API, tokenów ani haseł w kodzie **ani w wynikach** (np. `print(os.getenv(...))`).
-- Żadnych ścieżek z dysku autora (`/home/...`, `C:\Users\...`) w wynikach i kodzie.
-- Tracebacki tylko tam, gdzie błąd jest celem przykładu.
+- No API keys, tokens or passwords in code **or outputs** (e.g. `print(os.getenv(...))`).
+- No author disk paths (`/home/...`, `C:\Users\...`) in outputs or code.
+- Tracebacks only where the error is the point of the example.
 
-## Komórki na slajdach (`web:*`)
+## Slide cells (`web:*`)
 
-- Tag w metadanych komórki: `web:<klucz>` (Jupyter i VS Code: *Add Cell Tag*), np. `web:first-call`.
-- Lista kluczy wymaganych przez stronę jest w `NOTEBOOKS` w `web/scripts/sync-notebooks.mjs`. **Brak tagu przerywa build**; komórka bez wyniku daje ostrzeżenie.
-- Zmiana nazwy tagu wymaga zmiany w skrypcie i na stronie zajęć.
-- Komórka `web:setup` drukuje jedną linię w formacie
-  `czat: <dostawca> (<model>, klasyczny: <model>) | embeddingi: <dostawca> (<model>)`;
-  strona z niej podpisuje wyniki nazwami modeli.
-- Komórka pokazywana na slajdzie powinna mieścić się na ekranie: do ok. 25 linii kodu.
+- Tag in cell metadata: `web:<key>` (Jupyter and VS Code: *Add Cell Tag*), e.g. `web:first-call`.
+- Keys required by the site are listed in `NOTEBOOKS` in `web/scripts/sync-notebooks.mjs`. **A missing tag fails the build**; a cell without output gives a warning.
+- Renaming a tag requires changes in the script and on the lesson page.
+- The `web:setup` cell prints one line in the format
+  `czat: <provider> (<model>, klasyczny: <model>) | embeddingi: <provider> (<model>)`;
+  the site parses it to label outputs with model names.
+- A cell shown on a slide must fit the screen: up to ~25 lines of code.
 
-## Sprawdzenie
+## Check
 
 ```bash
-cd web && npm run sync && npm run dev     # potem /notebook/<slug>/ i strona zajęć
+cd web && npm run sync && npm run dev     # then /notebook/<slug>/ and the lesson page
 ```
 
-Wygenerowanych plików `web/src/content/generated/*.json` nie edytuje się ręcznie.
+Generated `web/src/content/generated/*.json` files are never edited by hand.

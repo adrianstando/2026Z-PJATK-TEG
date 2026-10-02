@@ -28,6 +28,6 @@ Oddanie mailem z tematem `[TEG] lab-01`, notebook z wynikami komórek, przed zaj
 
 ## Uwagi do notebooka
 
-- Pierwsza komórka kodu wybiera dostawcę (`github`, `azure`, `openai`, `deepseek`, `ollama`, `proxy`); dalszy kod jest wspólny.
-- Zapisane wyniki pochodzą z lokalnej Ollamy (`gemma4:e4b`, `gemma3:1b`, `embeddinggemma`). Inne modele dadzą inne liczby; różnice między modelami też są przedmiotem porównań.
+- Pierwsza komórka kodu wybiera dostawcę (`azure`, `openai`, `deepseek`, `ollama`, `proxy`); dalszy kod jest wspólny.
+- Zapisane wyniki: czat z OpenAI (`gpt-5-nano`, `gpt-4.1-mini`), embeddingi z lokalnej Ollamy (`embeddinggemma`), a w porównaniach modeli także `text-embedding-3-small`. Inne modele dadzą inne liczby; różnice między modelami też są przedmiotem porównań.
 - Komórki z tagiem `web:*` są pokazywane na prezentacji.

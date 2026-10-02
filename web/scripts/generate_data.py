@@ -5,6 +5,7 @@ Embeddingi i tokeny liczymy tutaj, raz, i zapisujemy jako JSON.
 
 Wymaga działającej Ollamy z modelem EmbeddingGemma:
     ollama pull embeddinggemma
+oraz OPENAI_API_KEY (slajd o kontekście porównuje z text-embedding-3-small).
 
 Uruchomienie (z katalogu web/):
     npm run data
@@ -138,12 +139,14 @@ def main() -> None:
         ],
     }, ensure_ascii=False))
 
-    # --- kontekst: kot / pies / kotek w dwóch modelach, rzut PCA ---
+    # --- kontekst: kot / pies / kotek w dwóch modelach ---
     texts = [t.format(w) for t in CONTEXT_TEMPLATES for w in CONTEXT_WORDS]
-    mpnet = TextEmbedding(WORD_MODEL)
+    # Te same dwa modele co w notebooku (komórka web:context): EmbeddingGemma i OpenAI.
+    from openai import OpenAI  # OPENAI_API_KEY ze środowiska
+    oai = np.array([e.embedding for e in OpenAI().embeddings.create(model="text-embedding-3-small", input=texts).data])
     models = {
         "embeddinggemma": embed(texts),
-        WORD_MODEL.split("/")[-1]: (lambda v: v / np.linalg.norm(v, axis=1, keepdims=True))(np.array(list(mpnet.embed(texts)))),
+        "text-embedding-3-small": oai / np.linalg.norm(oai, axis=1, keepdims=True),
     }
     # Trzy punkty zawsze leżą na jednej płaszczyźnie, więc trójkąt kot–pies–kotek da się
     # narysować z dokładnymi odległościami (bez zniekształceń rzutu). Zapisujemy cosinusy,

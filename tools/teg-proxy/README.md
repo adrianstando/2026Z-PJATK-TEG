@@ -76,7 +76,7 @@ teg_proxy/
 
 ## Ograniczenia (celowe: to narzędzie do nauki)
 
-- Tylko czat. Embeddingów nie ma; do nich służy GitHub Models albo Ollama (`embeddinggemma`).
+- Tylko czat. Embeddingów nie ma; do nich służy Ollama albo OpenAI (`embeddinggemma`).
 - `temperature`, `top_p` i `max_tokens` są ignorowane.
 - Brak tool callingu w formacie OpenAI. Wbudowane narzędzia agentów są **wyłączone**, więc model nic nie czyta ani nie uruchamia na komputerze użytkownika.
 - Claude: proxy wyłącza konektory MCP z konta claude.ai (`strict_mcp_config`). Bez tego każde zapytanie miało ~108 tys. tokenów kontekstu zamiast ~400.

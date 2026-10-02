@@ -16,16 +16,22 @@ type Sims = { cat_dog: number; cat_kitten: number; dog_kitten: number };
 const dist = (cos: number) => Math.sqrt(Math.max(0, 2 - 2 * cos)); // odległość wektorów o długości 1
 
 // Wspólna skala dla wszystkich kontekstów i modeli, żeby kształty dało się porównywać.
-const MAX_D = Math.max(...data.models.flatMap((m) => m.sims.flatMap((s) => [dist(s.cat_dog), dist(s.cat_kitten), dist(s.dog_kitten)])));
-const SCALE = (W - CAT.x - 90) / MAX_D;
-
-/** Trójkąt z dokładnymi odległościami: kot w (0,0), pies na osi x, kotek z twierdzenia cosinusów. */
-function triangle(s: Sims) {
+// Skala mieści każdy trójkąt i w poziomie (pies, rzut kotka), i w pionie (wysokość kotka).
+function rawTriangle(s: Sims) {
   const a = dist(s.cat_dog);
   const b = dist(s.cat_kitten);
   const c = dist(s.dog_kitten);
   const kx = (b * b + a * a - c * c) / (2 * a);
-  const ky = Math.sqrt(Math.max(0, b * b - kx * kx));
+  return { a, kx, ky: Math.sqrt(Math.max(0, b * b - kx * kx)) };
+}
+const ALL = data.models.flatMap((m) => m.sims.map(rawTriangle));
+const MAX_X = Math.max(...ALL.flatMap((t) => [t.a, t.kx]));
+const MAX_Y = Math.max(...ALL.map((t) => t.ky));
+const SCALE = Math.min((W - CAT.x - 90) / MAX_X, (CAT.y - 70) / MAX_Y);
+
+/** Trójkąt z dokładnymi odległościami: kot w (0,0), pies na osi x, kotek z twierdzenia cosinusów. */
+function triangle(s: Sims) {
+  const { a, kx, ky } = rawTriangle(s);
   return [CAT.x + a * SCALE, CAT.y, CAT.x + kx * SCALE, CAT.y - ky * SCALE];
 }
 
@@ -81,7 +87,7 @@ export function ContextSpace() {
         <ToggleGroup.Root type="single" value={String(m)} onValueChange={(v) => v && setM(Number(v))} className="flex gap-1 rounded-xl border border-[var(--line)] p-1" aria-label="Model">
           {data.models.map((x, i) => (
             <ToggleGroup.Item key={x.name} value={String(i)} className="rounded-lg px-3 py-1.5 font-mono text-xs text-fg-muted transition-colors data-[state=on]:bg-brand-500 data-[state=on]:text-white">
-              {x.name.replace("paraphrase-multilingual-", "")}
+              {x.name}
             </ToggleGroup.Item>
           ))}
         </ToggleGroup.Root>
@@ -118,7 +124,7 @@ export function ContextSpace() {
         ))}
       </svg>
       <p className="mt-2 font-mono text-[0.7rem] leading-relaxed text-fg-subtle">
-        model: {model.name} (lokalnie, {model.dim} wymiarów) · odległości na rysunku są dokładne: √(2 − 2·cos); trzy punkty zawsze mieszczą się na płaszczyźnie
+        model: {model.name} ({model.name === "embeddinggemma" ? "lokalnie, Ollama" : "API OpenAI"}, {model.dim} wymiarów) · odległości na rysunku są dokładne: √(2 − 2·cos); trzy punkty zawsze mieszczą się na płaszczyźnie
       </p>
     </Panel>
   );

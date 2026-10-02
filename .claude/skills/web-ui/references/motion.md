@@ -1,36 +1,36 @@
-# Animacje (`motion/react`)
+# Animation (`motion/react`)
 
-## Zasada
+## Principle
 
-Ruch ma **pokazywać proces**, którego uczymy. Przykłady z repo:
+Motion must **show the process** being taught. Examples from the repo:
 
-- `EmbeddingSpace`: punkty startują ze środka i „rozjeżdżają się” na swoje miejsca, bo model rozkłada słowa w przestrzeni.
-- `VectorSearchViz`: zapytanie spada → linie do **wszystkich** dokumentów (skan) → zostają tylko linie top-k → lista sortuje się z `layout`. Trzy fazy = trzy kroki algorytmu.
-- `SamplingViz`: paski prawdopodobieństw płyną sprężyną przy zmianie temperatury, top-k i top-p; odrzucone tokeny bledną.
+- `EmbeddingSpace`: points start at the center and spread to their places, because the model lays words out in space.
+- `VectorSearchViz`: query drops in → lines to **all** documents (scan) → only top-k lines remain → list re-sorts with `layout`. Three phases = three algorithm steps.
+- `SamplingViz`: probability bars spring on temperature, top-k and top-p changes; rejected tokens fade.
 
-Jeśli animacja nie odpowiada na pytanie „jaki krok procesu pokazuje?”, usuń ją.
+If an animation can't answer "which process step does it show?", remove it.
 
-## Gotowe wzorce
+## Patterns
 
-| Potrzeba | Jak |
+| Need | How |
 |---|---|
-| wejście sekcji / bloku | `<Reveal delay={0.1…0.4}>` (opacity + y + blur, raz) |
-| lista pojawia się element po elemencie | rodzic `variants={{ show: { transition: { staggerChildren: 0.06 } } }}`, dzieci `hidden/show` (patrz `Terminal`) |
-| liczba / pasek zmienia wartość | `animate={{ width: \`${p * 100}%\` }}` + `transition={{ type: "spring", stiffness: 120, damping: 20 }}` |
-| rysowanie linii / krawędzi | `motion.line` / `motion.path` z `initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}`; **zawsze podaj też statyczne x1/y1/x2/y2** |
-| zmiana kolejności listy | `<LayoutGroup>` + `motion.li layout` |
-| zakładka / pigułka przesuwa się | `layoutId="…"` na tle aktywnego elementu (patrz `CodeTabs`) |
-| proces w krokach | stan `phase` + `setTimeout` w `useEffect` zależnym od wejścia (patrz `VectorSearchViz`) |
-| start dopiero gdy widoczne | `useInView(ref, { once: true, margin: "-20% 0px" })` |
-| paralaksa tła | `useScroll` + `useTransform` (tylko `BackgroundMesh`) |
+| section / block entrance | `<Reveal delay={0.1…0.4}>` (opacity + y + blur, once) |
+| list appears item by item | parent `variants={{ show: { transition: { staggerChildren: 0.06 } } }}`, children `hidden/show` (see `Terminal`) |
+| number / bar changes value | `animate={{ width: \`${p * 100}%\` }}` + `transition={{ type: "spring", stiffness: 120, damping: 20 }}` |
+| drawing a line / edge | `motion.line` / `motion.path` with `initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}`; **always also set static x1/y1/x2/y2** |
+| list reorder | `<LayoutGroup>` + `motion.li layout` |
+| sliding tab / pill | `layoutId="…"` on the active element background (see `CodeTabs`) |
+| stepwise process | `phase` state + `setTimeout` in a `useEffect` depending on in-view (see `VectorSearchViz`) |
+| start only when visible | `useInView(ref, { once: true, margin: "-20% 0px" })` |
+| background parallax | `useScroll` + `useTransform` (only `BackgroundMesh`) |
 
-## Parametry
+## Parameters
 
-- Wejścia: `duration 0.7–0.9`, ease `[0.16, 1, 0.3, 1]`.
-- Sprężyny elementów danych: `stiffness 70–200`, `damping 14–20`.
-- Stagger: 0.03–0.08 s na element; całość krótsza niż ~1.5 s.
-- `prefers-reduced-motion`: `useReducedMotion()` → `initial={false}`; globalny CSS skraca resztę.
+- Entrances: `duration 0.7–0.9`, ease `[0.16, 1, 0.3, 1]`.
+- Data springs: `stiffness 70–200`, `damping 14–20`.
+- Stagger: 0.03–0.08 s per item; total under ~1.5 s.
+- `prefers-reduced-motion`: `useReducedMotion()` → `initial={false}`; global CSS shortens the rest.
 
-## Pułapki
+## Pitfalls
 
-Znane błędy animacji i SVG są zebrane w [responsive-and-pitfalls.md](responsive-and-pitfalls.md).
+Known animation and SVG bugs are in [responsive-and-pitfalls.md](responsive-and-pitfalls.md).

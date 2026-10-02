@@ -4,8 +4,6 @@
 // wyciągane przez scripts/sync-notebooks.mjs. Nie należy ich edytować tutaj:
 // po zmianie notebooka trzeba go uruchomić i zrobić commit; strona zaktualizuje się przy buildzie.
 //
-// REFERENCE = prawdziwe wyniki z modeli OpenAI (gpt-5-nano, text-embedding-3-small),
-// pokazywane obok wyników z notebooka dla porównania. Zostają ręcznie, z podpisem modelu.
 
 import generated from "@/content/generated/01-llm-embeddingi.json";
 
@@ -25,23 +23,28 @@ function parseSetup(line: string) {
 }
 export const MODELS = parseSetup(NB.setup.output);
 
-export const REFERENCE = {
-  usageModel: "gpt-5-nano (OpenAI)",
-  usageOut: `
-Prompt tokens: 30
-Completion tokens: 847
-Total tokens: 877
-Reasoning tokens: 576
-`,
-  contextModel: "text-embedding-3-small (OpenAI)",
-  contextOut: `
-kontekst                            cat-dog  cat-kitten
-[X]                                  0.6026      0.5697
-The [X] is sleeping peacefully       0.7670      0.8822
-I love my [X] very much              0.7762      0.9080
-Training a [X] requires patience     0.7804      0.9055
-`,
+const PROVIDER_NAMES: Record<string, string> = { openai: "OpenAI", azure: "Azure", ollama: "Ollama", deepseek: "DeepSeek", proxy: "proxy" };
+/** Nazwa dostawcy do podpisów, np. "OpenAI". */
+export const PROVIDERS = {
+  chat: PROVIDER_NAMES[MODELS.provider] ?? MODELS.provider,
+  embed: PROVIDER_NAMES[NB.setup.output.match(/embeddingi: (\S+)/)?.[1] ?? ""] ?? "",
 };
+
+/** Liczby z komórki web:usage (pierwsze wywołanie) do paska rozumowania. */
+function parseUsage(out: string) {
+  const num = (label: string) => Number(out.match(new RegExp(`${label} tokens:\\s+(\\d+)`))?.[1] ?? 0);
+  return { prompt: num("prompt"), completion: num("completion"), reasoning: num("reasoning") };
+}
+export const USAGE = parseUsage(NB.usage.output);
+
+/** Komórka web:context drukuje blok na model: "<model>\n<tabela>", bloki oddzielone pustą linią. */
+export const CONTEXT = NB.context.output
+  .split(/\n\s*\n/)
+  .map((block) => {
+    const [model, ...rest] = block.trim().split("\n");
+    return { model, output: rest.join("\n") };
+  })
+  .filter((b) => b.output);
 
 // Uproszczona wersja anthropic na slajd (pełna jest w notebooku i w 00-dostep-do-llm).
 export const anthropicCall = `
