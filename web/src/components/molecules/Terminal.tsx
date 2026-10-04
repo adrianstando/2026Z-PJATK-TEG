@@ -30,7 +30,7 @@ export function Terminal({
         <span className="font-mono text-xs text-fg-subtle">{title}</span>
       </div>
       <motion.pre
-        className="max-h-[30rem] overflow-auto px-5 py-4 font-mono text-[0.82rem] leading-relaxed text-fg-muted"
+        className="max-h-[30rem] overflow-auto px-4 py-3 font-mono text-[0.72rem] sm:px-5 sm:py-4 sm:text-[0.82rem] leading-relaxed text-fg-muted"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-10% 0px" }}

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import data from "@/data/words.json";
+import { useNarrow } from "@/lib/useMediaQuery";
 
 const W = 560;
 const H = 560;
@@ -11,10 +12,13 @@ const COLORS = ["var(--color-cat-1)", "var(--color-cat-2)", "var(--color-cat-3)"
 /**
  * Organizm: ozdoba hero strony głównej, ale z prawdziwych danych — 24 słowa
  * z words.json połączone z najbliższym sąsiadem (cosinus na pełnych wektorach).
- * Punkty dryfują, krawędzie "oddychają". Zapowiedź tego, co pokażemy na zajęciach 1.
+ * Punkty dryfują, krawędzie "oddychają" (tylko od 640 px wzwyż). Zapowiedź tego, co pokażemy na zajęciach 1.
  */
 export function HeroConstellation() {
+  // Ciągły ruch tylko na dużym ekranie; na telefonie 48 zapętlonych animacji grzało urządzenie.
   const reduce = useReducedMotion();
+  const narrow = useNarrow();
+  const still = reduce || narrow;
   const edges = useMemo(
     () =>
       data.similarity.map((row, i) => {
@@ -45,7 +49,7 @@ export function HeroConstellation() {
           stroke="var(--color-brand-300)"
           strokeWidth={1}
           initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: reduce ? 0.35 : [0.15, 0.5, 0.15] }}
+          animate={{ pathLength: 1, opacity: still ? 0.35 : [0.15, 0.5, 0.15] }}
           transition={{
             pathLength: { duration: 1.2, delay: 0.8 + n * 0.04 },
             opacity: { duration: 4 + (n % 5), repeat: Infinity, delay: n * 0.2 },
@@ -56,7 +60,7 @@ export function HeroConstellation() {
         <motion.g
           key={w.word}
           initial={{ opacity: 0, scale: 0 }}
-          animate={reduce ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -6, 0] }}
+          animate={still ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -6, 0] }}
           transition={{
             opacity: { delay: 0.3 + i * 0.03 },
             scale: { type: "spring", delay: 0.3 + i * 0.03 },

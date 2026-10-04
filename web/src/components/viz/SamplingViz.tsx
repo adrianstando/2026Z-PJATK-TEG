@@ -61,15 +61,15 @@ export function SamplingViz() {
   };
 
   return (
-    <Panel className="p-6 md:p-8">
+    <Panel className="p-4 sm:p-6 md:p-8">
       <div className="flex flex-wrap items-center gap-4">
         <p className="font-mono text-lg md:text-2xl">
           <span className="text-fg-muted">{PROMPT} </span>
           <AnimatePresence mode="popLayout">
             <motion.span
               key={picks[0]?.n ?? 0}
-              initial={{ opacity: 0, y: 14, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -14 }}
               className="inline-block rounded-md bg-focus/15 px-1.5 text-focus"
             >
@@ -93,7 +93,7 @@ export function SamplingViz() {
             <motion.div
               key={r.t}
               layout
-              className={cn("grid grid-cols-[7.5rem_1fr_3.5rem_3.5rem] items-center gap-3 transition-opacity", r.reason && "opacity-35")}
+              className={cn("grid grid-cols-[5.25rem_minmax(0,1fr)_2.75rem_2.75rem] items-center gap-2 sm:grid-cols-[7.5rem_1fr_3.5rem_3.5rem] sm:gap-3 transition-opacity", r.reason && "opacity-35")}
             >
               <span className="truncate font-mono text-sm text-fg-muted">{r.t}</span>
               <div className="relative h-6 overflow-hidden rounded-md bg-[var(--panel-hi)]">
@@ -115,7 +115,7 @@ export function SamplingViz() {
               <span className="text-right font-mono text-sm tabular-nums">{r.reason ? "—" : `${(r.final * 100).toFixed(1)}%`}</span>
             </motion.div>
           ))}
-          <div className="grid grid-cols-[7.5rem_1fr_3.5rem_3.5rem] gap-3 pt-1 text-[0.7rem] uppercase tracking-wider text-fg-subtle">
+          <div className="grid grid-cols-[5.25rem_minmax(0,1fr)_2.75rem_2.75rem] gap-2 sm:grid-cols-[7.5rem_1fr_3.5rem_3.5rem] sm:gap-3 pt-1 text-[0.7rem] uppercase tracking-wider text-fg-subtle">
             <span />
             <span className="flex gap-4">
               <span className="flex items-center gap-1.5"><i className="size-2 rounded-sm bg-brand-500/40" /> po temperaturze</span>

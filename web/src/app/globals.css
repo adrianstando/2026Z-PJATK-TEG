@@ -60,12 +60,14 @@
 }
 
 html {
+  /* Tło na <html>, nie na <body>: iOS przy "odbiciu" przewijania pokazuje tło html (domyślnie
+     białe), a tło na <body> zasłoniłoby BackgroundMesh (-z-10). */
+  background: var(--color-ink-950);
   scroll-behavior: smooth;
   scroll-padding-top: 6rem;
 }
 
 body {
-  background: var(--color-ink-950);
   color: var(--color-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -103,6 +105,18 @@ body {
 }
 .code-block code {
   font-family: var(--font-mono);
+}
+@media (max-width: 639px) {
+  .code-block pre {
+    padding: 1rem;
+    font-size: 0.74rem;
+  }
+}
+
+/* Element siatki domyślnie ma min-width: auto, więc długa linia kodu albo wiersz
+   wykresu rozpycha kolumnę poza ekran telefonu. Z min-width: 0 przewija się sam blok. */
+.grid > * {
+  min-width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

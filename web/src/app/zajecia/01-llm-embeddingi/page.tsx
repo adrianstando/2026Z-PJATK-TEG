@@ -166,7 +166,7 @@ export default function Lesson01() {
                 <ReasoningBar />
               </Reveal>
               <Reveal delay={0.4}>
-                <Terminal output={S.NB.limit.output} title={`${S.MODELS.chat} · limity 15, 300 i 2000 tokenów`} />
+                <Terminal output={S.NB.limit.output} title="limit długości: model klasyczny i rozumujący" />
               </Reveal>
             </div>
           </div>
@@ -353,7 +353,7 @@ function ReasoningBar() {
         </div>
       </div>
       <p className="mt-3 text-xs text-fg-subtle">
-        prompt: {prompt} tokenów · razem: {total}
+        prompt: {prompt} tokenów · razem: {total} · wywołanie bez limitu: {reasoning} to tyle, ile model sam zużył na rozumowanie, a nie stały budżet
       </p>
     </Panel>
   );

@@ -7,20 +7,21 @@ import { Search } from "lucide-react";
 import data from "@/data/search.json";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
+import { useNarrow } from "@/lib/useMediaQuery";
+import { layoutLabels } from "@/lib/labelLayout";
 
-const W = 1000;
-const H = 620;
-const PAD = 60;
 const dot = (a: number[], b: number[]) => a.reduce((s, v, i) => s + v * b[i], 0);
 
 // Układ radialny zamiast rzutu PCA: PCA zachowuje tu tylko ~24% wariancji, więc punkty
 // bliskie na płaszczyźnie wcale nie musiały być bliskie w 768 wymiarach. Tutaj zapytanie
 // jest w środku, a odległość dokumentu od środka to dokładnie 1 − cos (wspólna skala dla
 // wszystkich zapytań). Kąt nic nie znaczy: dokumenty mają stałe, równo rozłożone kierunki.
-const CX = W / 2;
-const CY = H / 2;
-const R_MIN = 70;
-const R_MAX = H / 2 - PAD;
+// Szeroki układ (projektor) i wysoki (telefon); czcionki w jednostkach viewBox.
+const LAYOUT = {
+  wide: { W: 1000, H: 620, PAD: 60, R_MIN: 70, EX: 1.45, label: 16, rank: 12, ring: 12, q: 15, dot: 9, hit: 12 },
+  narrow: { W: 560, H: 640, PAD: 40, R_MIN: 52, EX: 0.85, label: 19, rank: 16, ring: 17, q: 21, dot: 11, hit: 15 },
+};
+type Layout = (typeof LAYOUT)["wide"];
 const ALL_COS = data.queries.flatMap((q) => data.docs.map((d) => dot(q.v, d.v)));
 const COS_HI = Math.max(...ALL_COS);
 const COS_LO = Math.min(...ALL_COS);
@@ -29,10 +30,11 @@ const ANGLE = new Map(
     .sort((a, b) => Math.atan2(a.y - 0.5, a.x - 0.5) - Math.atan2(b.y - 0.5, b.x - 0.5))
     .map((d, i, arr) => [d.id, (i / arr.length) * 2 * Math.PI - Math.PI / 2]),
 );
-const place = (id: number, cos: number) => {
-  const r = R_MIN + ((COS_HI - cos) / (COS_HI - COS_LO)) * (R_MAX - R_MIN);
+const ringR = (L: Layout, cos: number) => L.R_MIN + ((COS_HI - cos) / (COS_HI - COS_LO)) * (L.H / 2 - L.PAD - L.R_MIN);
+const place = (L: Layout, id: number, cos: number) => {
+  const r = ringR(L, cos);
   const a = ANGLE.get(id)!;
-  return { x: CX + r * Math.cos(a) * 1.45, y: CY + r * Math.sin(a) };
+  return { x: L.W / 2 + r * Math.cos(a) * L.EX, y: L.H / 2 + r * Math.sin(a) };
 };
 
 type Phase = "idle" | "drop" | "scan" | "rank";
@@ -50,6 +52,7 @@ export function VectorSearchViz() {
   const [q, setQ] = useState(0);
   const [k, setK] = useState(3);
   const [phase, setPhase] = useState<Phase>("idle");
+  const L = useNarrow() ? LAYOUT.narrow : LAYOUT.wide;
 
   const query = data.queries[q];
   const ranked = useMemo(
@@ -58,7 +61,22 @@ export function VectorSearchViz() {
   );
   const top = new Set(ranked.slice(0, k).map((d) => d.id));
   const rankOf = new Map(ranked.map((d, i) => [d.id, i + 1]));
-  const pos = new Map(ranked.map((d) => [d.id, place(d.id, d.score)]));
+  const pos = new Map(ranked.map((d) => [d.id, place(L, d.id, d.score)]));
+  const shortName = (d: { source: string }) => d.source.split(" ").slice(-1)[0];
+  // podpisy omijają zapytanie w środku i jego etykietę
+  const qBox = { x0: L.W / 2 - 70, y0: L.H / 2 - 20, x1: L.W / 2 + 70, y1: L.H / 2 + 30 + L.q };
+  const labelPos = new Map(
+    layoutLabels(
+      data.docs.map((d) => ({ ...pos.get(d.id)!, text: shortName(d) })),
+      { font: L.label, r: L.hit, width: L.W, height: L.H, avoid: [
+        qBox,
+        ...[COS_HI, (COS_HI + COS_LO) / 2, COS_LO].map((c) => {
+          const y = L.H / 2 - ringR(L, c) - 6;
+          return { x0: L.W / 2, y0: y - L.ring, x1: L.W / 2 + L.ring * 6, y1: y + 2 };
+        }),
+      ] },
+    ).map((l, i) => [data.docs[i].id, l]),
+  );
 
   useEffect(() => {
     if (!inView) return;
@@ -71,8 +89,8 @@ export function VectorSearchViz() {
     };
   }, [q, inView]);
 
-  const qx = CX;
-  const qy = CY;
+  const qx = L.W / 2;
+  const qy = L.H / 2;
 
   return (
     <div ref={ref} className="space-y-5">
@@ -96,14 +114,14 @@ export function VectorSearchViz() {
 
       <div className="grid gap-5 lg:grid-cols-[1fr_26rem]">
         <Panel className="relative overflow-hidden p-2">
-          <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Wyszukiwanie najbliższych wektorów">
+          <svg viewBox={`0 0 ${L.W} ${L.H}`} className="h-auto w-full" role="img" aria-label="Wyszukiwanie najbliższych wektorów">
             {/* pierścienie skali: odległość od środka = 1 − cos */}
             {[COS_HI, (COS_HI + COS_LO) / 2, COS_LO].map((c) => {
-              const r = R_MIN + ((COS_HI - c) / (COS_HI - COS_LO)) * (R_MAX - R_MIN);
+              const r = ringR(L, c);
               return (
                 <g key={c}>
-                  <ellipse cx={CX} cy={CY} rx={r * 1.45} ry={r} fill="none" stroke="var(--line)" strokeDasharray="4 6" />
-                  <text x={CX + r * 1.45 + 6} y={CY - 4} className="fill-fg-subtle font-mono text-[12px]">
+                  <ellipse cx={qx} cy={qy} rx={r * L.EX} ry={r} fill="none" stroke="var(--line)" strokeDasharray="4 6" />
+                  <text x={qx + 6} y={qy - r - 6} className="fill-fg-subtle font-mono" style={{ fontSize: L.ring }}>
                     cos {c.toFixed(2)}
                   </text>
                 </g>
@@ -162,21 +180,22 @@ export function VectorSearchViz() {
                   <circle
                     cx={0}
                     cy={0}
-                    r={hit ? 12 : 9}
+                    r={hit ? L.hit : L.dot}
                     fill={hit ? "var(--color-hit)" : "var(--color-fg-subtle)"}
                     style={{ transition: "r 300ms, fill 300ms" }}
                   />
-                  <text x={0} y={-16} textAnchor="middle" className="fill-fg-muted text-[16px]">
-                    {d.source.split(" ").slice(-1)[0]}
+                  <text x={labelPos.get(d.id)!.dx} y={labelPos.get(d.id)!.dy} textAnchor={labelPos.get(d.id)!.anchor} className="fill-fg-muted" style={{ fontSize: L.label }}>
+                    {shortName(d)}
                   </text>
                   {hit && (
                     <motion.text
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       x={0}
-                      y={5}
+                      y={L.rank * 0.38}
                       textAnchor="middle"
-                      className="fill-ink-950 font-mono text-[12px] font-bold"
+                      className="fill-ink-950 font-mono font-bold"
+                      style={{ fontSize: L.rank }}
                     >
                       {rankOf.get(d.id)}
                     </motion.text>
@@ -198,16 +217,16 @@ export function VectorSearchViz() {
                   strokeWidth={2}
                   initial={{ r: 10, opacity: 0.8 }}
                   animate={{ r: 120, opacity: 0 }}
-                  transition={{ duration: 2.2, repeat: Infinity, delay: r * 0.7, ease: "easeOut" }}
+                  transition={{ duration: 2.2, repeat: 1, delay: r * 0.7, ease: "easeOut" }}
                 />
               ))}
               <circle cx={qx} cy={qy} r={13} fill="var(--color-focus)" />
-              <text x={qx} y={qy + 34} textAnchor="middle" className="fill-focus font-mono text-[15px] font-semibold">
+              <text x={qx} y={qy + 22 + L.q} textAnchor="middle" className="fill-focus font-mono font-semibold" style={{ fontSize: L.q }}>
                 zapytanie
               </text>
             </motion.g>
           </svg>
-          <div className="absolute left-5 top-4 font-mono text-xs text-fg-subtle">
+          <div className="px-3 pb-2 font-mono text-[0.7rem] text-fg-subtle md:absolute md:left-5 md:top-4 md:p-0 md:text-xs">
             {phase === "scan" ? `porównanie z ${data.docs.length} wektorami…` : phase === "rank" ? `top-${k} z ${data.docs.length}` : ""}
             <span className="block">odległość od zapytania = 1 − cos (768 wymiarów), kierunek bez znaczenia</span>
           </div>

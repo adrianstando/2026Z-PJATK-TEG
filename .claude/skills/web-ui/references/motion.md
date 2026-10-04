@@ -14,7 +14,7 @@ If an animation can't answer "which process step does it show?", remove it.
 
 | Need | How |
 |---|---|
-| section / block entrance | `<Reveal delay={0.1…0.4}>` (opacity + y + blur, once) |
+| section / block entrance | `<Reveal delay={0.1…0.4}>` (opacity + y, once; no `filter: blur`) |
 | list appears item by item | parent `variants={{ show: { transition: { staggerChildren: 0.06 } } }}`, children `hidden/show` (see `Terminal`) |
 | number / bar changes value | `animate={{ width: \`${p * 100}%\` }}` + `transition={{ type: "spring", stiffness: 120, damping: 20 }}` |
 | drawing a line / edge | `motion.line` / `motion.path` with `initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}`; **always also set static x1/y1/x2/y2** |
@@ -22,7 +22,8 @@ If an animation can't answer "which process step does it show?", remove it.
 | sliding tab / pill | `layoutId="…"` on the active element background (see `CodeTabs`) |
 | stepwise process | `phase` state + `setTimeout` in a `useEffect` depending on in-view (see `VectorSearchViz`) |
 | start only when visible | `useInView(ref, { once: true, margin: "-20% 0px" })` |
-| background parallax | `useScroll` + `useTransform` (only `BackgroundMesh`) |
+| switching between two views of the same data | keep the same `motion.g` per point and animate its `x`/`y` to new targets (see `EmbeddingSpace` t-SNE ↔ radial) |
+| smooth change of SVG geometry | `useTween` (requestAnimationFrame) over plain attributes (see `ContextSpace`) |
 
 ## Parameters
 
@@ -30,6 +31,12 @@ If an animation can't answer "which process step does it show?", remove it.
 - Data springs: `stiffness 70–200`, `damping 14–20`.
 - Stagger: 0.03–0.08 s per item; total under ~1.5 s.
 - `prefers-reduced-motion`: `useReducedMotion()` → `initial={false}`; global CSS shortens the rest.
+
+## Performance (phones)
+
+- No `filter: blur` and no `backdrop-filter` on animated or large elements (exception: the navbar). Glows are `radial-gradient`.
+- No `repeat: Infinity`. Decorative loops only on wide screens (`useNarrow()` → off), process loops limited (`repeat: 1`).
+- The background is static: no parallax, no drifting blobs.
 
 ## Pitfalls
 

@@ -29,6 +29,11 @@ Collected from bugs fixed in this repo. Each item: symptom → cause → fix.
 | Terminal table columns misalign on phone | `whitespace-pre-wrap` wraps table rows | `Terminal wrap={false}`: `whitespace-pre` and horizontal scroll |
 | Points of one group merge into one on a 2D plot | shared PCA over many groups: largest variance is between groups | projection computed for the chosen group; for 3 points an exact drawing (triangle from distances) |
 | Continuous animation distracts and loads CPU | constant 3D camera rotation | continuous animation off by default, start/stop button |
+| Page 2–3× wider than phone screen, code and charts run off the right edge | grid items default to `min-width: auto`, so a long code line or fixed-column chart row widens the column | global `.grid > * { min-width: 0 }` in `globals.css`; long content scrolls inside its own block |
+| Phone heats up, scroll stutters, white flashes on iPhone | screen-sized layers with `filter: blur(140px)` animated forever, `backdrop-filter` on every panel, `filter: blur` in `Reveal` | glows as `radial-gradient`, static; no `backdrop-filter` except the navbar; entrance = opacity + y only; no `repeat: Infinity` on phones |
+| Square corner sticks out of a rounded card in Safari | blurred child inside `overflow-hidden` + rounded parent with a transform | gradient instead of a blurred element |
+| `BackgroundMesh` invisible | background set on both `html` and `body`; `body` paints over the `-z-10` layer | background only on `html` (also covers iOS overscroll) |
+| SVG labels unreadable on phone | 1000-unit `viewBox` scaled to ~300 px | separate narrow layout via `useNarrow()` (`lib/useMediaQuery.ts`): taller `viewBox`, larger font units, captions below the drawing instead of absolute overlays |
 
 ## Navigation
 

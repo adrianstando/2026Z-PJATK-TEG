@@ -5,10 +5,10 @@ import { ToggleGroup } from "radix-ui";
 import data from "@/data/context.json";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
+import { useNarrow } from "@/lib/useMediaQuery";
 
 const W = 640;
 const H = 380;
-const CAT = { x: 110, y: 300 }; // kot zawsze w tym samym miejscu, reszta względem niego
 const CONTEXT_LABEL = ["samo słowo", "…is sleeping…", "I love my…", "Training a…"];
 const COLOR = { cat: "var(--color-cat-1)", dog: "var(--color-cat-2)", kitten: "var(--color-cat-3)" };
 
@@ -25,14 +25,20 @@ function rawTriangle(s: Sims) {
   return { a, kx, ky: Math.sqrt(Math.max(0, b * b - kx * kx)) };
 }
 const ALL = data.models.flatMap((m) => m.sims.map(rawTriangle));
-const MAX_X = Math.max(...ALL.flatMap((t) => [t.a, t.kx]));
 const MAX_Y = Math.max(...ALL.map((t) => t.ky));
-const SCALE = Math.min((W - CAT.x - 90) / MAX_X, (CAT.y - 70) / MAX_Y);
+// Środek odcinka kot–pies zawsze na pionowej osi rysunku: przy zmianie odległości oba punkty
+// rozsuwają się albo zbliżają symetrycznie, a kotek leży tam, gdzie wynika z odległości.
+// HALF: największe wychylenie od osi (pies albo kotek) we wszystkich wariantach.
+const HALF = Math.max(...ALL.flatMap((t) => [t.a / 2, Math.abs(t.kx - t.a / 2)]));
+// Marginesy na podpisy: z boków na „cos …”, u góry na nazwę kotka, u dołu na podpis krawędzi kot–pies.
+const SCALE = Math.min((W / 2 - 110) / HALF, (H - 70 - 50) / MAX_Y);
+const BASE_Y = (H + MAX_Y * SCALE) / 2 + 10;
 
-/** Trójkąt z dokładnymi odległościami: kot w (0,0), pies na osi x, kotek z twierdzenia cosinusów. */
+/** Trójkąt z dokładnymi odległościami: kot i pies na jednej poziomej linii, kotek z twierdzenia cosinusów. */
 function triangle(s: Sims) {
   const { a, kx, ky } = rawTriangle(s);
-  return [CAT.x + a * SCALE, CAT.y, CAT.x + kx * SCALE, CAT.y - ky * SCALE];
+  const catX = W / 2 - (a / 2) * SCALE;
+  return [catX, catX + a * SCALE, catX + kx * SCALE, BASE_Y - ky * SCALE];
 }
 
 /** Płynne przejście między zestawami liczb (pozycje punktów) bez animowania atrybutów SVG przez motion. */
@@ -67,15 +73,20 @@ function useTween(target: number[], ms = 650) {
 export function ContextSpace() {
   const [m, setM] = useState(0);
   const [ctx, setCtx] = useState(0);
+  // Rozmiary w jednostkach viewBox dobrane tak, żeby po przeskalowaniu napisy miały ok. 16 px,
+  // jak w pozostałych wizualizacjach (na projektorze rysunek jest szerszy niż viewBox, na telefonie węższy).
+  const T = useNarrow() ? { word: 27, cos: 24, r: 11 } : { word: 14, cos: 13, r: 8 };
   const model = data.models[m];
   const s = model.sims[ctx];
-  const [dx, dy, kx, ky] = useTween(triangle(s));
+  const [cx, dx, kx, ky] = useTween(triangle(s));
+  const cy = BASE_Y;
+  const dy = BASE_Y;
   const closer: "dog" | "kitten" = s.cat_kitten > s.cat_dog ? "kitten" : "dog";
 
   const edge = (x2: number, y2: number, cos: number, best: boolean, labelDy: number, labelDx = 0, anchor: "middle" | "end" = "middle") => (
     <g>
-      <line x1={CAT.x} y1={CAT.y} x2={x2} y2={y2} stroke={best ? "var(--color-hit)" : "var(--line-strong)"} strokeWidth={best ? 3.5 : 2} strokeLinecap="round" />
-      <text x={(CAT.x + x2) / 2 + labelDx} y={(CAT.y + y2) / 2 + labelDy} textAnchor={anchor} className={cn("font-mono text-[17px]", best ? "fill-hit" : "fill-fg-subtle")}>
+      <line x1={cx} y1={cy} x2={x2} y2={y2} stroke={best ? "var(--color-hit)" : "var(--line-strong)"} strokeWidth={best ? 3.5 : 2} strokeLinecap="round" />
+      <text x={(cx + x2) / 2 + labelDx} y={(cy + y2) / 2 + labelDy} textAnchor={anchor} className={cn("font-mono", best ? "fill-hit" : "fill-fg-subtle")} style={{ fontSize: T.cos }}>
         cos {cos.toFixed(2)}
       </text>
     </g>
@@ -110,14 +121,14 @@ export function ContextSpace() {
         {edge(kx, ky, s.cat_kitten, closer === "kitten", 6, -16, "end")}
         {(
           [
-            ["kot", CAT.x, CAT.y, COLOR.cat],
+            ["kot", cx, cy, COLOR.cat],
             ["pies", dx, dy, COLOR.dog],
             ["kotek", kx, ky, COLOR.kitten],
           ] as const
         ).map(([label, x, y, color]) => (
           <g key={label}>
-            <circle cx={x} cy={y} r={11} fill={color} />
-            <text x={x} y={y - 20} textAnchor="middle" className="fill-fg text-[19px] font-medium">
+            <circle cx={x} cy={y} r={T.r} fill={color} />
+            <text x={x} y={y - T.r - 8} textAnchor="middle" className="fill-fg font-medium" style={{ fontSize: T.word }}>
               {label}
             </text>
           </g>

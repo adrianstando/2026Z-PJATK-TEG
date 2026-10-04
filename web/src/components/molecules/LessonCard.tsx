@@ -7,7 +7,11 @@ import { Badge } from "@/components/ui/Badge";
 import { ACTIVITY_LABEL, type Lesson } from "@/content/course";
 import { cn } from "@/lib/cn";
 
-/** Molekuła: kafelek zajęć. Gotowe zajęcia mają linki do prezentacji i notebooka. */
+/**
+ * Molekuła: kafelek zajęć. Gotowe zajęcia mają linki do prezentacji i notebooka.
+ * Poświata w rogu to gradient, nie rozmyte koło: Safari nie przycina warstw z filter: blur
+ * do zaokrąglonych rogów (overflow-hidden + transform), więc z rogu wystawał kwadrat.
+ */
 export function LessonCard({ lesson, index }: { lesson: Lesson; index: number }) {
   return (
     <motion.div
@@ -20,7 +24,11 @@ export function LessonCard({ lesson, index }: { lesson: Lesson; index: number })
         lesson.ready ? "border-brand-500/40 bg-gradient-to-br from-brand-500/15 to-transparent" : "border-[var(--line)] bg-[var(--panel)]",
       )}
     >
-      {lesson.ready && <div className="pointer-events-none absolute -right-16 -top-16 size-40 rounded-full bg-brand-500/30 blur-3xl" />}
+      {lesson.ready && <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-brand-500) 30%, transparent), transparent 55%)" }}
+        />}
       <div className="flex items-start justify-between">
         <span className="font-mono text-5xl font-light tabular-nums text-fg-subtle/70">{String(lesson.n).padStart(2, "0")}</span>
         {!lesson.ready && <Lock className="size-4 text-fg-subtle" />}

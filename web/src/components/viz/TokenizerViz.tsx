@@ -19,7 +19,7 @@ export function TokenizerViz() {
   const s = data.samples[i];
   const chars = s.text.length;
   return (
-    <Panel className="p-6 md:p-8">
+    <Panel className="p-4 sm:p-6 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <ToggleGroup.Root
           type="single"

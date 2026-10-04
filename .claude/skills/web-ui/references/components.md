@@ -41,7 +41,7 @@ pages        app/**/page.tsx        only compose organisms + content
 |---|---|
 | `viz/SamplingViz` | generation: temperature → top-k → top-p → sampling, table of successive generations |
 | `viz/TokenizerViz` | text split by a real tokenizer (Radix ToggleGroup) |
-| `viz/EmbeddingSpace` | words in 2D (t-SNE), neighbors computed on full vectors |
+| `viz/EmbeddingSpace` | words in 2D, toggle: t-SNE projection / radial view (distance from the selected word = 1 − cos); neighbors computed on full vectors |
 | `viz/VectorSpace3D` | two vectors in 3D (orthographic, rotating camera) and four measures: cosine, dot, L2, L1 |
 | `viz/VectorSearchViz` | query → scan all vectors → top-k (computed live) |
 | `viz/ContextSpace` | cat / dog / kitten in contexts, two models; triangle with exact distances (law of cosines) |
@@ -57,4 +57,5 @@ pages        app/**/page.tsx        only compose organisms + content
 - `"use client"` only when state, effects or motion are needed. `CodeBlock` and pages stay server components.
 - Minimal props. Instead of 10 flags, make a second component.
 - Join classes with `cn()` from `lib/cn.ts`. Accept `className` for outside positioning.
+- `lib/useMediaQuery.ts`: `useNarrow()` (phone layout of SVG visualizations). `lib/labelLayout.ts`: `layoutLabels()` places point labels without overlaps.
 - Interactions (slider, toggle, tabs, tooltip, dialog) always via a **Radix** primitive for free keyboard accessibility.

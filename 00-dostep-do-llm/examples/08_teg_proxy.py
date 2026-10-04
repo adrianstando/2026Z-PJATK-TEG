@@ -1,4 +1,4 @@
-"""teg-proxy — Twoja subskrypcja Claude / Copilot / Codex jako API zgodne z OpenAI.
+"""teg-proxy — subskrypcja Claude / Copilot / Codex jako API zgodne z OpenAI.
 
 W osobnym terminalu:
     cd tools/teg-proxy && pip install -r requirements.txt
