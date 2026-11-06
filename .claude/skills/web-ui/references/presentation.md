@@ -13,7 +13,7 @@ A lesson page is **both** the instructor's presentation (projector, keyboard) an
 1. **Hero**: lesson number, title, lead, agenda as chips.
 2. Organization (only when there is something to announce).
 3. 6–10 content boards: **one thesis per board**.
-4. Final board: quiz or assignment + links (Colab, notebook).
+4. Final board: assignment + links (Colab, notebook).
 
 ## Content rules
 

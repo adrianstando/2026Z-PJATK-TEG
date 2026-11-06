@@ -17,6 +17,7 @@ const outDir = path.resolve(root, "web/src/content/generated");
 const NOTEBOOKS = {
   "01-llm-embeddingi": ["setup", "first-call", "usage", "tokens", "temperature", "limit", "chat", "agent", "embedding", "similarity", "context", "search"],
   "02-rag": ["setup", "corpus", "chunking", "chunks", "chroma", "filter", "rag", "no-rag", "bm25", "rrf", "rerank", "eval", "chunk-eval", "judge", "judge-control"],
+  "03-agenci": ["setup", "tools", "tool-call", "react", "parallel", "context", "chain", "graph", "graph-stream", "create-agent", "memory", "store", "agentic-rag", "web-search"],
 };
 
 const join = (x) => (Array.isArray(x) ? x.join("") : x ?? "");

@@ -22,7 +22,7 @@ Celem kursu jest nauczenie budowania aplikacji opartych na dużych modelach jęz
 
 1. **wprowadzenie**: krótka prezentacja z interaktywnymi przykładami,
 2. **notebook**: przykłady kodu do uruchomienia i modyfikacji,
-3. **zadanie** do wykonania na zajęciach albo po nich, na zmianę z quizem.
+3. **zadanie** do wykonania na zajęciach albo po nich.
 
 Przed pierwszymi zajęciami należy skonfigurować dostęp do modelu językowego: [00-dostep-do-llm](00-dostep-do-llm/README.md).
 
@@ -44,7 +44,7 @@ Notebooki można uruchomić w przeglądarce, bez instalacji, albo lokalnie:
 | przed 1. | 0 | [Dostęp do LLM](00-dostep-do-llm/README.md) | Azure for Students, Ollama, OpenAI, Anthropic, teg-proxy; wywołania z Pythona | — | [instrukcja](00-dostep-do-llm/README.md) |
 | 03.10.2026 | 1 | [LLM i embeddingi](01-llm-embeddingi/README.md) | - Proces generowania tekstu, tokeny, koszt <br> - Wywołanie modelu z Pythona, prosty agent <br> - Embeddingi, miary podobieństwa, wyszukiwanie wektorowe | **[zadanie](01-llm-embeddingi/zadanie.ipynb)** | [prezentacja](https://adrianstando.github.io/2026Z-PJATK-TEG/zajecia/01-llm-embeddingi/) · [notebook](https://adrianstando.github.io/2026Z-PJATK-TEG/notebook/01-llm-embeddingi/) · [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adrianstando/2026Z-PJATK-TEG/blob/main/01-llm-embeddingi/notebook.ipynb) |
 | 17.10.2026 | 2 | [RAG](02-rag/README.md) | - Chunking <br> - Chroma i filtrowanie po metadanych <br> - Wyszukiwanie hybrydowe (BM25) i reranking <br> - Ewaluacja: hit rate, MRR, LLM jako sędzia | **[zadanie](02-rag/zadanie.ipynb)** | [prezentacja](https://adrianstando.github.io/2026Z-PJATK-TEG/zajecia/02-rag/) · [notebook](https://adrianstando.github.io/2026Z-PJATK-TEG/notebook/02-rag/) · [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adrianstando/2026Z-PJATK-TEG/blob/main/02-rag/notebook.ipynb) |
-| 07.11.2026 | 3 | [Agenci](03-agenci/README.md) | - Tool calling <br> - ReAct w LangGraph <br> - Pamięć <br> - Agentic RAG | — | w przygotowaniu |
+| 07.11.2026 | 3 | [Agenci](03-agenci/README.md) | - Tool calling <br> - ReAct w LangGraph <br> - Pamięć <br> - Agentic RAG | **[zadanie](03-agenci/zadanie.ipynb)** | [prezentacja](https://adrianstando.github.io/2026Z-PJATK-TEG/zajecia/03-agenci/) · [notebook](https://adrianstando.github.io/2026Z-PJATK-TEG/notebook/03-agenci/) · [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adrianstando/2026Z-PJATK-TEG/blob/main/03-agenci/notebook.ipynb) |
 | 21.11.2026 | 4 | [GraphRAG](04-graphrag/README.md) | - Neo4j i Cypher <br> - Ekstrakcja grafu wiedzy przez LLM <br> - Porównanie z RAG <br> - Start projektu | — | w przygotowaniu |
 | 05.12.2026 | 5 | [MCP i multi-agent](05-mcp-multi-agent/README.md) | - Model Context Protocol, własny serwer MCP <br> - Systemy wieloagentowe | **test** (pytania praktyczne) | w przygotowaniu |
 | 19.12.2026 | 6 | [Agentic coding](06-agentic-coding/README.md) | - Claude Code, Codex, Copilot <br> - `AGENTS.md`, `CLAUDE.md`, skille, design system <br> - Przegląd kodu wygenerowanego przez agenta <br> - Zespoły na skillathon | — | w przygotowaniu |
@@ -53,15 +53,13 @@ Notebooki można uruchomić w przeglądarce, bez instalacji, albo lokalnie:
 
 ## Zasady oceniania
 
-> **Punktacja i rozkład punktów do potwierdzenia na kolejnych zajęciach.** Trwają uzgodnienia między prowadzącymi.
-
 Składowe zaliczenia (wstępnie, łącznie 100 pkt):
 
 | Składowa | Punkty | Opis |
 |---|---|---|
 | **Projekt** | 50 | własny system z min. 8 z 12 zagadnień kursu (zespół 3-osobowy: 10) + prezentacja; [szczegóły](projekt/README.md) |
 | **Test** | 30 | zajęcia 5, pytania praktyczne; **warunek zaliczenia: min. 50%** |
-| **Praca na zajęciach** | 12 | zadania do wykonania w trakcie zajęć lub quiz |
+| **Praca na zajęciach** | 12 | zadania do wykonania na zajęciach lub po nich |
 | **Skillathon** | 8 | praca w grupach z agentem kodującym na przedostatnich zajęciach |
 
 **Oceny końcowe:**

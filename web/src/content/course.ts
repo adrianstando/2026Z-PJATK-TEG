@@ -2,7 +2,7 @@
 // README.md w katalogu głównym repo trzyma tę samą tabelę dla GitHuba;
 // przy zmianie planu trzeba zaktualizować oba miejsca.
 
-export type Activity = "quiz" | "zadanie" | "test" | "skillathon" | "prezentacja" | null;
+export type Activity = "zadanie" | "test" | "skillathon" | "prezentacja" | null;
 
 export type Lesson = {
   n: number;
@@ -61,9 +61,11 @@ export const LESSONS: Lesson[] = [
     title: "i tool calling",
     accent: "Agenci",
     topics: ["Tool calling", "ReAct w LangGraph", "Pamięć", "Agentic RAG"],
-    activity: "quiz",
+    activity: "zadanie",
     folder: "03-agenci",
-    ready: false,
+    ready: true,
+    notebook: true,
+    task: true,
   },
   {
     n: 4,
@@ -126,7 +128,7 @@ export const LESSONS: Lesson[] = [
 export const GRADING = [
   { label: "Projekt", points: 50, note: "własny system z min. 8 z 12 zagadnień kursu (zespół 3-osobowy: 10) + prezentacja" },
   { label: "Test", points: 30, note: "warunek zaliczenia: min. 50% (15 pkt)" },
-  { label: "Praca na zajęciach", points: 12, note: "zadania do wykonania w trakcie zajęć lub quiz" },
+  { label: "Praca na zajęciach", points: 12, note: "zadania do wykonania na zajęciach lub po nich" },
   { label: "Skillathon", points: 8, note: "praca w grupach z agentem kodującym na przedostatnich zajęciach" },
 ] as const;
 
@@ -140,7 +142,6 @@ export const SCALE = [
 ] as const;
 
 export const ACTIVITY_LABEL: Record<Exclude<Activity, null>, string> = {
-  quiz: "Quiz",
   zadanie: "Zadanie",
   test: "Test",
   skillathon: "Skillathon",

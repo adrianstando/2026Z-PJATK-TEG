@@ -34,6 +34,8 @@ Collected from bugs fixed in this repo. Each item: symptom → cause → fix.
 | Square corner sticks out of a rounded card in Safari | blurred child inside `overflow-hidden` + rounded parent with a transform | gradient instead of a blurred element |
 | `BackgroundMesh` invisible | background set on both `html` and `body`; `body` paints over the `-z-10` layer | background only on `html` (also covers iOS overscroll) |
 | SVG labels unreadable on phone | 1000-unit `viewBox` scaled to ~300 px | separate narrow layout via `useNarrow()` (`lib/useMediaQuery.ts`): taller `viewBox`, larger font units, captions below the drawing instead of absolute overlays |
+| Page jumps while stepping an animation; Next button moves away from the cursor | a step adds content, so a card or the step label grows | fixed height (`h-*`) on cards and on scrolling lists inside them, `min-h-*` on `StepControls` via `className` |
+| Highlighted code line ends before the line does when scrolled sideways | line background is limited to the visible width of `pre` | `code` as `inline-block` with `min-width: 100%`, so `.line.hl` width follows the longest line (`globals.css`); `.line` must stay inline, otherwise the newlines between lines double the spacing |
 
 ## Navigation
 

@@ -5,7 +5,6 @@ import { SiteNav } from "@/components/site/SiteNav";
 import { Slide } from "@/components/site/Slide";
 import { LessonCard } from "@/components/molecules/LessonCard";
 import { SectionHeading } from "@/components/molecules/SectionHeading";
-import { Callout } from "@/components/molecules/Callout";
 import { GradeScale, GradingBar } from "@/components/viz/GradingBar";
 import { HeroConstellation } from "@/components/viz/HeroConstellation";
 import { HeroTitle } from "@/components/lesson/HeroTitle";
@@ -18,7 +17,7 @@ import { REPO_URL } from "@/lib/paths";
 const STRUCTURE = [
   { icon: Presentation, title: "Wprowadzenie", text: "Krótka prezentacja z interaktywnymi przykładami." },
   { icon: NotebookPen, title: "Notebook", text: "Przykłady kodu do uruchomienia i modyfikacji." },
-  { icon: SquarePen, title: "Zadanie", text: "Do wykonania na zajęciach albo po nich; na zmianę z quizem." },
+  { icon: SquarePen, title: "Zadanie", text: "Do wykonania na zajęciach albo po nich." },
 ];
 
 const SCHEDULE = [
@@ -161,9 +160,6 @@ export default function Home() {
 
         <Slide id="zaliczenie">
           <SectionHeading eyebrow="Zaliczenie" accent="Składowe" title="zaliczenia" />
-          <Reveal delay={0.1} className="mt-8">
-            <Callout>Punktacja i rozkład punktów do potwierdzenia na kolejnych zajęciach. Trwają uzgodnienia między prowadzącymi.</Callout>
-          </Reveal>
           <div className="mt-10">
             <GradingBar />
           </div>

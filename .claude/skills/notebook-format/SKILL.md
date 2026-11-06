@@ -64,7 +64,7 @@ Relative links (`../00-dostep-do-llm/README.md`, `zadanie.ipynb`) are rewritten 
 - Renaming a tag requires changes in the script and on the lesson page.
 - The `web:setup` cell prints one line in the format
   `czat: <provider> (<model>, klasyczny: <model>) | embeddingi: <provider> (<model>)`;
-  the site parses it to label outputs with model names.
+  the site parses it to label outputs with model names. Lesson 3 prints `agent: <model>` instead of `klasyczny: <model>`.
 - A cell shown on a slide must fit the screen: up to ~25 lines of code.
 
 ## Check

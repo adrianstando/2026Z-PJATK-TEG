@@ -12,3 +12,10 @@ chromadb
 rank-bm25
 langchain-text-splitters
 sentence-transformers
+langchain>=1.0
+langchain-openai>=1.0
+langgraph>=1.0
+ddgs
+fastapi
+httpx
+pytest

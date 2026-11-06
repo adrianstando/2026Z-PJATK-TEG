@@ -34,6 +34,7 @@ pages        app/**/page.tsx        only compose organisms + content
 | `Callout` (`insight` / `warning`) | one takeaway or one pitfall; max 1 per slide |
 | `Formula` | formula in a panel with a symbol legend: `<Formula tex={String.raw`…`} legend={[[sym, text]]} />` |
 | `LessonCard` | lesson tile on the home page |
+| `JsonBlock` | multi-line JSON or code in a narrow card: wrapped lines keep their indent; optional highlighted fragment |
 | `Markdown` | repo README in site style (single source of truth) |
 | `notebook/NotebookView` | `.ipynb` section by section: markdown, code, saved outputs, plots |
 | `StepControls` + `lib/useStepper.ts` | step-by-step animation: `const s = useStepper(total, { autoplay?, interval? })` → `{ ref, step, total, playing, next, prev, go, reset, toggle }`; `<div ref={s.ref}>` + `<StepControls stepper={s} label={…} slider? />`. Starts on Play or a manual step (default; DESIGN.md: no autoplay); `autoplay: true` plays once on entering view and any manual step stops it, reduced motion shows the last step; `slider` replaces dots for long processes |
@@ -64,6 +65,16 @@ pages        app/**/page.tsx        only compose organisms + content
 | `viz/RerankViz` | 10 hybrid candidates reordered by a cross-encoder, with rank deltas |
 | `viz/EvalMetricsViz` | hit@1 and MRR accumulated question by question for 4 methods |
 | `viz/JudgeViz` | LLM judge verdicts F/C incl. control cases |
+| `viz/ReplayFlow` | shared skeleton: replays a saved agent run step by step (token moves between diagram nodes, event log on the right, step / restart buttons) |
+| `viz/AgentLoopViz` | ReAct loop question → thinking → action → observation → back to thinking → answer, replayed from the `web:react` output |
+| `viz/ChainViz` | LangChain chain as a fixed row of steps, no branches or loop |
+| `viz/GraphRunViz` | LangGraph `__start__` → model ⇄ tools → `__end__`, state message count, replayed from `graph.stream` |
+| `viz/ContextGrowthViz` | prompt tokens per agent call as stacked bars (tool defs, system, question, tool calls, tool results) |
+| `viz/RagVsAgenticViz` | classic RAG (always one search) vs agentic RAG (model decides queries) on three questions |
+| `viz/ToolCallAnatomyViz` | one tool call step by step: tool schema → model `tool_calls` → app executes → `role=tool` message, matching id highlighted |
+| `viz/ParallelCallsViz` | several tool calls in one model response, results sent back together; `web:parallel` |
+| `viz/HarnessViz` | agent harness around the model; `react()` steps highlight diagram part and code lines |
+| `viz/MemoryViz` | same scenario twice with two `thread_id`s: checkpointer only, then with a store between the threads |
 | `site/SiteNav`, `site/Breadcrumbs`, `site/Slide`, `site/PresenterKeys`, `site/BackgroundMesh` | page frame, breadcrumbs, keyboard navigation |
 | `lesson/HeroTitle` | opening title with word animation |
 

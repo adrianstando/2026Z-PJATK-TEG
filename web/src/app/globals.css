@@ -132,6 +132,11 @@ body {
 }
 
 /* Linia kodu wskazana przez prowadzącego (CodeBlock highlight=[...]). */
+/* code rośnie do szerokości najdłuższej linii, więc tło .hl sięga końca przy przewijaniu w poziomie */
+.code-block pre code {
+  display: inline-block;
+  min-width: 100%;
+}
 .code-block .line.hl {
   display: inline-block;
   width: calc(100% + 2.8rem);
