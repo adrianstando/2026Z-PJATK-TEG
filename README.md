@@ -53,7 +53,7 @@ Notebooki można uruchomić w przeglądarce, bez instalacji, albo lokalnie:
 
 ## Zasady oceniania
 
-Składowe zaliczenia (wstępnie, łącznie 100 pkt):
+Składowe zaliczenia (łącznie 100 pkt):
 
 | Składowa | Punkty | Opis |
 |---|---|---|
