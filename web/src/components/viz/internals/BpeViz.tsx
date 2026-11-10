@@ -6,12 +6,15 @@ import raw from "@/data/llm-internals.json";
 import { Panel } from "@/components/ui/Panel";
 import { StickySteps } from "@/components/molecules/StickySteps";
 import { useStepper } from "@/lib/useStepper";
+import { StableSteps } from "@/components/molecules/StableSteps";
 import { cn } from "@/lib/cn";
 
 type Step = { merge: string[] | null; count: number; tokens: string[] };
 const data = raw.bpe as { text: string; alphabet: number; vocab: string[]; steps: Step[]; newText: string; encoded: { t: string; id: number }[] };
 const gpt = raw.gpt2 as { tokens: string[]; ids: number[]; vocab: number };
 const MAX = data.steps.length - 1;
+/** co 10. krok obu animacji i ostatni: rezerwa wysokości w StableSteps (każdy krok to ~70 kopii, za ciężko na telefonie) */
+const BPE_STEPS: (number | "last")[] = [...Array.from({ length: Math.ceil(Math.max(MAX + 1, data.encoded.length + 1) / 10) }, (_, i) => i * 10), "last"];
 const BASE = data.alphabet;
 
 const show = (t: string) => t.replace(/ /g, "·");
@@ -134,6 +137,14 @@ function Encode() {
 
 /** Organizm: BPE na akapicie: tokeny rosną ze scalenia na scalenie, słownik z ID; potem kodowanie nowego tekstu token po tokenie. Dane: scripts/llm_internals_data.py. */
 export function BpeViz() {
+  return (
+    <StableSteps steps={BPE_STEPS}>
+      <BpeVizInner />
+    </StableSteps>
+  );
+}
+
+function BpeVizInner() {
   return (
     <Panel className="p-4 sm:p-6 md:p-8">
       <Tabs.Root defaultValue="learn">

@@ -5,3 +5,7 @@ __pycache__/
 *.pyc
 .DS_Store
 node_modules/
+
+# Next.js 16 generuje je przy `next dev`; instrukcje dla agentów są w .claude/
+web/AGENTS.md
+web/CLAUDE.md

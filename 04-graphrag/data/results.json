@@ -1,0 +1,684 @@
+{
+ "provider": "openai",
+ "chat": "gpt-5-nano",
+ "agent": "gpt-5.4-nano",
+ "embed": "text-embedding-3-small",
+ "results": [
+  {
+   "kind": "lookup",
+   "question": "Jakie certyfikaty ma Piotr Nowak?",
+   "expected": [
+    "Certified Kubernetes Administrator"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Piotr Nowak",
+      0.659
+     ],
+     [
+      "Bartosz Krawczyk",
+      0.505
+     ],
+     [
+      "Tomasz Wójcik",
+      0.485
+     ],
+     [
+      "Paweł Dąbrowski",
+      0.483
+     ]
+    ],
+    "answer": "Piotr Nowak ma certyfikat **Certified Kubernetes Administrator**.",
+    "correct": true
+   },
+   "structured": {
+    "where": null,
+    "query": "Piotr Nowak certyfikaty",
+    "hits": [
+     [
+      "Piotr Nowak",
+      0.679
+     ],
+     [
+      "Bartosz Krawczyk",
+      0.514
+     ],
+     [
+      "Paweł Dąbrowski",
+      0.495
+     ],
+     [
+      "Tomasz Wójcik",
+      0.487
+     ]
+    ],
+    "answer": "Piotr Nowak ma certyfikat **Certified Kubernetes Administrator**.",
+    "correct": true
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person {name:'Piotr Nowak'})-[:HAS_CERT]->(c:Certification) RETURN c.name AS cert ORDER BY cert"
+    ],
+    "observations": [
+     "[{\"cert\": \"Certified Kubernetes Administrator\"}]"
+    ],
+    "answer": "Piotr Nowak ma certyfikat: **Certified Kubernetes Administrator**.",
+    "correct": true
+   }
+  },
+  {
+   "kind": "opis projektu",
+   "question": "Kto pracował nad wykrywaniem nadużyć w transakcjach płatniczych?",
+   "expected": [
+    "Marcin Jankowski"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Marcin Jankowski",
+      0.374
+     ],
+     [
+      "Anna Kowalska",
+      0.314
+     ],
+     [
+      "Magdalena Kamińska",
+      0.314
+     ],
+     [
+      "Joanna Kozłowska",
+      0.299
+     ]
+    ],
+    "answer": "Nad wykrywaniem nadużyć w transakcjach płatniczych pracował **Marcin Jankowski** (projekt: „Przetwarzanie strumienia transakcji płatniczych pod kątem wykrywania nadużyć”).",
+    "correct": true
+   },
+   "structured": {
+    "where": null,
+    "query": "kto pracował nad wykrywaniem nadużyć w transakcjach płatniczych",
+    "hits": [
+     [
+      "Marcin Jankowski",
+      0.418
+     ],
+     [
+      "Magdalena Kamińska",
+      0.357
+     ],
+     [
+      "Anna Kowalska",
+      0.355
+     ],
+     [
+      "Joanna Kozłowska",
+      0.345
+     ]
+    ],
+    "answer": "Nad wykrywaniem nadużyć w transakcjach płatniczych pracował **Marcin Jankowski** (projekt: przetwarzanie strumienia transakcji płatniczych pod kątem wykrywania nadużyć).",
+    "correct": true
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person)-[w:WORKED_AT]->(c:Company)\nWHERE toLower(c.name) CONTAINS 'fraud'\n   OR toLower(c.name) CONTAINS 'płat'\n   OR toLower(c.name) CONTAINS 'payment'\n   OR toLower(c.name) CONTAINS 'transact'\n   OR toLower(w.role) CONTAINS 'fraud'\n   OR toLower(w.role) CONTAINS 'payment'\n   OR toLower(w.role) CONTAINS 'transaction'\nRETURN p.name AS name, p.title AS title, w.role AS role, c.name AS company, w.from AS from, w.to AS to\nORDER BY from DESC\nLIMIT 20"
+    ],
+    "observations": [
+     "[]"
+    ],
+    "answer": "W dostarczonych danych w grafie nie ma informacji o osobach pracujących nad wykrywaniem nadużyć w transakcjach płatniczych (nie znaleziono dopasowań po nazwach firm ani rolach zawierających „fraud/payment/transaction”).",
+    "correct": false
+   }
+  },
+  {
+   "kind": "zliczanie",
+   "question": "Ile osób zna Kubernetes?",
+   "expected": 8,
+   "rag": {
+    "hits": [
+     [
+      "Piotr Nowak",
+      0.477
+     ],
+     [
+      "Bartosz Krawczyk",
+      0.465
+     ],
+     [
+      "Agnieszka Zielińska",
+      0.434
+     ],
+     [
+      "Joanna Kozłowska",
+      0.411
+     ]
+    ],
+    "answer": "Kubernetes zna **4 osoby**: Piotr Nowak, Bartosz Krawczyk, Agnieszka Zielińska i Joanna Kozłowska.",
+    "correct": false
+   },
+   "structured": {
+    "where": null,
+    "query": "ile osób zna Kubernetes",
+    "hits": [
+     [
+      "Piotr Nowak",
+      0.545
+     ],
+     [
+      "Bartosz Krawczyk",
+      0.507
+     ],
+     [
+      "Agnieszka Zielińska",
+      0.479
+     ],
+     [
+      "Ewa Woźniak",
+      0.471
+     ]
+    ],
+    "answer": "Dokumenty wskazują, że Kubernetes zna **4 osoby**: **Piotr Nowak, Bartosz Krawczyk, Agnieszka Zielińska, Ewa Woźniak**.",
+    "correct": false
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person)-[:HAS_SKILL]->(s:Skill {name:'Kubernetes'}) RETURN count(DISTINCT p) AS cnt;"
+    ],
+    "observations": [
+     "[{\"cnt\": 8}]"
+    ],
+    "answer": "W grafie **8 osób** zna **Kubernetes**.",
+    "correct": true
+   }
+  },
+  {
+   "kind": "filtrowanie",
+   "question": "Kto z Warszawy zna Pythona?",
+   "expected": [
+    "Anna Kowalska",
+    "Natalia Mazur"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Paweł Dąbrowski",
+      0.564
+     ],
+     [
+      "Anna Kowalska",
+      0.494
+     ],
+     [
+      "Michał Lewandowski",
+      0.474
+     ],
+     [
+      "Marcin Jankowski",
+      0.446
+     ]
+    ],
+    "answer": "Z Warszawy zna Pythona **Anna Kowalska**.",
+    "correct": false
+   },
+   "structured": {
+    "where": {
+     "city": "Warszawa"
+    },
+    "query": "osoby z Warszawy, które znają Pythona",
+    "hits": [
+     [
+      "Anna Kowalska",
+      0.511
+     ],
+     [
+      "Natalia Mazur",
+      0.437
+     ],
+     [
+      "Tomasz Wójcik",
+      0.424
+     ],
+     [
+      "Krzysztof Szymański",
+      0.413
+     ]
+    ],
+    "answer": "Z Warszawy Pythona znają: **Anna Kowalska** i **Natalia Mazur**.",
+    "correct": true
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person)-[:LIVES_IN]->(c:City {name:'Warszawa'})\nMATCH (p)-[h:HAS_SKILL]->(s:Skill {name:'Python'})\nRETURN p.name AS name, p.title AS title, h.years AS years, p.available_from AS available_from\nORDER BY h.years DESC, p.name"
+    ],
+    "observations": [
+     "[{\"name\": \"Anna Kowalska\", \"title\": \"Senior Backend Developer\", \"years\": 8, \"available_from\": \"2027-01-01\"}, {\"name\": \"Natalia Mazur\", \"title\": \"Full-stack Developer\", \"years\": 2, \"available_from\": \"2027-02-15\"}]"
+    ],
+    "answer": "Z Warszawy Python znają:\n- **Anna Kowalska** (Senior Backend Developer) — **8 lat** (dostępność: 2027-01-01)\n- **Natalia Mazur** (Full-stack Developer) — **2 lata** (dostępność: 2027-02-15)",
+    "correct": true
+   }
+  },
+  {
+   "kind": "agregacja",
+   "question": "Ile średnio lat doświadczenia z Pythonem mają osoby, które go znają?",
+   "expected": 4.75,
+   "rag": {
+    "hits": [
+     [
+      "Paweł Dąbrowski",
+      0.527
+     ],
+     [
+      "Anna Kowalska",
+      0.474
+     ],
+     [
+      "Michał Lewandowski",
+      0.425
+     ],
+     [
+      "Piotr Nowak",
+      0.415
+     ]
+    ],
+    "answer": "Średnie doświadczenie z Pythonem wśród osób, które go znają (Paweł Dąbrowski: 3 lata, Anna Kowalska: 8 lat, Michał Lewandowski: 7 lat) wynosi **6 lat**.",
+    "correct": false
+   },
+   "structured": {
+    "where": null,
+    "query": "Średnie lata doświadczenia z Pythonem wśród osób, które znają Pythona",
+    "hits": [
+     [
+      "Paweł Dąbrowski",
+      0.517
+     ],
+     [
+      "Anna Kowalska",
+      0.469
+     ],
+     [
+      "Michał Lewandowski",
+      0.429
+     ],
+     [
+      "Piotr Nowak",
+      0.415
+     ]
+    ],
+    "answer": "Średnie doświadczenie z Pythonem (dla osób, które je znają): **6.0 lat**.",
+    "correct": false
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person)-[h:HAS_SKILL]->(s:Skill {name:'Python'})\nRETURN avg(h.years) AS avg_years, count(*) AS people;"
+    ],
+    "observations": [
+     "[{\"avg_years\": 4.75, \"people\": 8}]"
+    ],
+    "answer": "Osoby, które znają Python, mają średnio **4.75 lat** doświadczenia (na podstawie **8 osób**).",
+    "correct": true
+   }
+  },
+  {
+   "kind": "wielokrokowe",
+   "question": "Kto pracował w tej samej firmie co Anna Kowalska?",
+   "expected": [
+    "Katarzyna Wiśniewska",
+    "Tomasz Wójcik",
+    "Paweł Dąbrowski",
+    "Joanna Kozłowska",
+    "Natalia Mazur",
+    "Bartosz Krawczyk"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Anna Kowalska",
+      0.635
+     ],
+     [
+      "Joanna Kozłowska",
+      0.568
+     ],
+     [
+      "Katarzyna Wiśniewska",
+      0.529
+     ],
+     [
+      "Ewa Woźniak",
+      0.527
+     ]
+    ],
+    "answer": "W tej samej firmie co Anna Kowalska pracowała **Katarzyna Wiśniewska** — w latach **2022–obecnie** w firmie **Datawise**.",
+    "correct": false
+   },
+   "structured": {
+    "where": null,
+    "query": "osoby, które pracowały w tej samej firmie co Anna Kowalska",
+    "hits": [
+     [
+      "Anna Kowalska",
+      0.594
+     ],
+     [
+      "Joanna Kozłowska",
+      0.509
+     ],
+     [
+      "Katarzyna Wiśniewska",
+      0.489
+     ],
+     [
+      "Ewa Woźniak",
+      0.481
+     ]
+    ],
+    "answer": "W tej samej firmie co Anna Kowalska pracowały **Joanna Kozłowska** (Northbyte) i **Katarzyna Wiśniewska** (Datawise).",
+    "correct": false
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (a:Person {name:'Anna Kowalska'})-[:WORKED_AT]->(c:Company)<-[:WORKED_AT]-(p:Person)\nWHERE p.name <> 'Anna Kowalska'\nRETURN DISTINCT c.name AS company, p.name AS person\nORDER BY company, person"
+    ],
+    "observations": [
+     "[{\"company\": \"Datawise\", \"person\": \"Katarzyna Wiśniewska\"}, {\"company\": \"Datawise\", \"person\": \"Natalia Mazur\"}, {\"company\": \"Datawise\", \"person\": \"Paweł Dąbrowski\"}, {\"company\": \"Northbyte\", \"person\": \"Bartosz Krawczyk\"}, {\"company\": \"Northbyte\", \"person\": \"Joanna Kozłowska\"}, {\"company\": \"Northbyte\", \"person\": \"Tomasz Wójcik\"}]"
+    ],
+    "answer": "Anna Kowalska pracowała w tych firmach, z innymi osobami:\n\n- **Datawise**: Katarzyna Wiśniewska, Natalia Mazur, Paweł Dąbrowski  \n- **Northbyte**: Bartosz Krawczyk, Joanna Kozłowska, Tomasz Wójcik",
+    "correct": true
+   }
+  },
+  {
+   "kind": "dopasowanie",
+   "question": "Kto spełnia wszystkie wymagania RFP-002 i jest dostępny przed startem projektu?",
+   "expected": [
+    "Piotr Nowak"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Bartosz Krawczyk",
+      0.464
+     ],
+     [
+      "Joanna Kozłowska",
+      0.45
+     ],
+     [
+      "Piotr Nowak",
+      0.448
+     ],
+     [
+      "Agnieszka Zielińska",
+      0.439
+     ]
+    ],
+    "answer": "Z dostępnych dokumentów nie da się wskazać osoby spełniającej **wszystkie** wymagania RFP-002, bo w dostarczonych materiałach nie ma treści ani listy wymagań RFP-002.  \n\nDostępni przed startem projektu (na podstawie dat dostępności) są: **Piotr Nowak (2026-11-01)** oraz **Bartosz Krawczyk (2027-03-15)**, **Joanna Kozłowska (od 1 maja 2027)**, **Agnieszka Zielińska (od 1 kwietnia 2027)**.",
+    "correct": false
+   },
+   "structured": {
+    "where": null,
+    "query": "Kandydaci spełniający wszystkie wymagania RFP-002",
+    "hits": [
+     [
+      "Bartosz Krawczyk",
+      0.429
+     ],
+     [
+      "Piotr Nowak",
+      0.416
+     ],
+     [
+      "Krzysztof Szymański",
+      0.404
+     ],
+     [
+      "Paweł Dąbrowski",
+      0.401
+     ]
+    ],
+    "answer": "Na podstawie dostarczonych dokumentów nie da się wskazać, kto spełnia wszystkie wymagania **RFP-002** i jest dostępny przed startem projektu, ponieważ w dokumentach nie ma treści ani listy wymagań **RFP-002** oraz brak informacji o dacie startu projektu.",
+    "correct": false
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (r:RFP {id:'RFP-002'})\nMATCH (r)-[:REQUIRES {min_years: rmin}]->(req:Skill)\nWITH r, req, rmin\nMATCH (p:Person)-[h:HAS_SKILL]->(req)\nWHERE h.years >= rmin\nWITH r, p, collect({skill:req.name, min_years:rmin}) AS reqs\nMATCH (r)-[:REQUIRES]->(req2:Skill)\nWITH r, p, reqs, collect(DISTINCT req2.name) AS reqNames\nWHERE size(reqNames) = size(reqs)\n  AND size(reqs) = size(reqNames)\n  AND all(x IN reqs WHERE x.skill IN reqNames)\nWHERE p.available_from < r.start_date OR p.available_from = r.start_date\nRETURN DISTINCT p.name, p.title, p.available_from, r.start_date AS rfp_start_date, r.team_size",
+     "MATCH (r:RFP {id:'RFP-002'})-[:REQUIRES {min_years: rmin}]->(req:Skill)\nWITH r, collect({skill:req.name, min_years:rmin}) AS required\nMATCH (p:Person)-[h:HAS_SKILL]->(s:Skill)\nWITH r, required, p, collect({skill:s.name, years:h.years}) AS skills\nWITH r, required, p\nWHERE all(req IN required WHERE any(k IN skills WHERE k.skill = req.skill AND k.years >= req.min_years))\n  AND p.available_from <= r.start_date\nRETURN DISTINCT p.name, p.title, p.available_from, r.start_date AS rfp_start_date, r.team_size AS team_size",
+     "MATCH (r:RFP {id:'RFP-002'})- [reqRel:REQUIRES]->(reqSkill:Skill)\nWITH r, collect({skill:reqSkill.name, min_years:reqRel.min_years}) AS required\nMATCH (p:Person)-[h:HAS_SKILL]->(s:Skill)\nWITH r, required, p, collect({skill:s.name, years:h.years}) AS skills\nWITH r, required, p\nWHERE all(req IN required WHERE any(k IN skills WHERE k.skill = req.skill AND k.years >= req.min_years))\n  AND p.available_from <= r.start_date\nRETURN DISTINCT p.name, p.title, p.available_from, r.start_date AS rfp_start_date, r.team_size AS team_size"
+    ],
+    "observations": [
+     "błąd: {neo4j_code: Neo.ClientError.Statement.SyntaxError} {message: Invalid input 'WHERE': expected an expression, 'ORDER BY', 'CALL', 'CREATE', 'LOAD CSV', 'DELETE', 'DETACH', 'FILTER', 'FINISH', 'FOR', 'FOREACH', 'INSERT', 'LET', 'LIMIT', 'MATCH', 'MERGE', 'NEXT', 'NODETACH', 'OFFSET', 'OPTIONAL', 'REMO",
+     "błąd: {neo4j_code: Neo.ClientError.Statement.SyntaxError} {message: Variable `rmin` not defined (line 1, column 53 (offset: 52))",
+     "[{\"p.name\": \"Piotr Nowak\", \"p.title\": \"DevOps Engineer\", \"p.available_from\": \"2026-11-01\", \"rfp_start_date\": \"2027-03-01\", \"team_size\": 2}]"
+    ],
+    "answer": "Spełnia wszystkie wymagania RFP-002 i jest dostępny przed startem projektu:\n\n- **Piotr Nowak** — *DevOps Engineer*  \n  **Dostępny od:** 2026-11-01  \n  **Start RFP-002:** 2027-03-01",
+    "correct": true
+   }
+  },
+  {
+   "kind": "filtr + treść",
+   "question": "Kto z Krakowa pracował przy systemach płatności?",
+   "expected": [
+    "Piotr Nowak",
+    "Marcin Jankowski"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Marcin Jankowski",
+      0.515
+     ],
+     [
+      "Krzysztof Szymański",
+      0.508
+     ],
+     [
+      "Anna Kowalska",
+      0.488
+     ],
+     [
+      "Magdalena Kamińska",
+      0.488
+     ]
+    ],
+    "answer": "Z Krakowa pracował przy systemach płatności **Marcin Jankowski**.",
+    "correct": false
+   },
+   "structured": {
+    "where": {
+     "city": "Kraków"
+    },
+    "query": "systemy płatności",
+    "hits": [
+     [
+      "Marcin Jankowski",
+      0.361
+     ],
+     [
+      "Piotr Nowak",
+      0.339
+     ],
+     [
+      "Michał Lewandowski",
+      0.262
+     ]
+    ],
+    "answer": "Z Krakowa przy systemach płatności pracowali:\n- **Marcin Jankowski** (przetwarzanie strumienia transakcji płatniczych pod kątem wykrywania nadużyć)\n- **Piotr Nowak** (infrastruktura bramki płatniczej operatora kart z dostępnością 99,99%)",
+    "correct": true
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person)-[w:WORKED_AT]->(c:Company)\nMATCH (p)-[:LIVES_IN]->(city:City {name:'Kraków'})\nWHERE toLower(c.name) CONTAINS 'payment' OR toLower(c.name) CONTAINS 'pay' OR toLower(w.role) CONTAINS 'payment' OR toLower(w.role) CONTAINS 'pay' OR toLower(p.title) CONTAINS 'payment' OR toLower(p.name) CONTAINS 'payment'\nRETURN DISTINCT p.name AS name, p.title AS title, c.name AS company, w.role AS role, w.from AS fromYear, w.to AS toYear\nORDER BY p.name"
+    ],
+    "observations": [
+     "[]"
+    ],
+    "answer": "W grafie nie znalazłem żadnej osoby mieszkającej w Krakowie, która ma w danych wskazane pracę przy firmach/rolach powiązanych z „payment/pay” (systemy płatności).",
+    "correct": false
+   }
+  },
+  {
+   "kind": "filtr + treść",
+   "question": "Kto z Gdańska pracował przy projektach medycznych?",
+   "expected": [
+    "Katarzyna Wiśniewska",
+    "Bartosz Krawczyk"
+   ],
+   "rag": {
+    "hits": [
+     [
+      "Michał Lewandowski",
+      0.415
+     ],
+     [
+      "Bartosz Krawczyk",
+      0.415
+     ],
+     [
+      "Natalia Mazur",
+      0.406
+     ],
+     [
+      "Katarzyna Wiśniewska",
+      0.4
+     ]
+    ],
+    "answer": "Z Gdańska przy projektach medycznych pracowała **Katarzyna Wiśniewska** (projekt: medyczny model wykrywający zmiany na zdjęciach RTG dla sieci szpitali) oraz **Bartosz Krawczyk** (projekt: monitoring i niezawodność platformy telemedycznej).",
+    "correct": true
+   },
+   "structured": {
+    "where": {
+     "city": "Gdańsk"
+    },
+    "query": "kandydaci, którzy pracowali przy projektach medycznych",
+    "hits": [
+     [
+      "Bartosz Krawczyk",
+      0.44
+     ],
+     [
+      "Katarzyna Wiśniewska",
+      0.432
+     ],
+     [
+      "Ewa Woźniak",
+      0.38
+     ]
+    ],
+    "answer": "Przy projektach medycznych pracowali: **Bartosz Krawczyk** (Monitoring i niezawodność platformy telemedycznej) oraz **Katarzyna Wiśniewska** (medyczny model wykrywający zmiany na zdjęciach RTG dla sieci szpitali).",
+    "correct": true
+   },
+   "graph": {
+    "cypher": [
+     "MATCH (p:Person)-[w:WORKED_AT]->(c:Company)\nMATCH (p)-[:LIVES_IN]->(city:City {name:'Gdańsk'})\nWHERE toLower(c.name) CONTAINS 'med' OR toLower(c.name) CONTAINS 'health' OR toLower(c.name) CONTAINS 'medycz'\nRETURN p.name, p.title, c.name AS company, w.role, w.from, w.to\nORDER BY p.name",
+     "MATCH (p:Person)-[:LIVES_IN]->(city:City {name:'Gdańsk'})\nMATCH (p)-[w:WORKED_AT]->(c:Company)\nWHERE toLower(w.role) CONTAINS 'med' OR toLower(w.role) CONTAINS 'health' OR toLower(w.role) CONTAINS 'medycz'\nRETURN p.name, p.title, c.name AS company, w.role, w.from, w.to\nORDER BY p.name"
+    ],
+    "observations": [
+     "[]",
+     "[]"
+    ],
+    "answer": "W dostępnych danych nie znalazłem osób mieszkających w **Gdańsku**, które pracowały przy **projektach medycznych** (brak dopasowań po nazwie firmy/roli).",
+    "correct": false
+   }
+  }
+ ],
+ "canonical": {
+  "AWS": "AWS",
+  "Amazon Web Services": "AWS",
+  "Apache Kafka": "Kafka",
+  "Azure": "Azure",
+  "Docker": "Docker",
+  "Go": "Go",
+  "Golang": "Go",
+  "JS": "JS",
+  "Java": "Java",
+  "JavaScript": "JS",
+  "K8s": "Kubernetes",
+  "Kafka": "Kafka",
+  "Kubernetes": "Kubernetes",
+  "ML": "ML",
+  "Microsoft Azure": "Azure",
+  "Node.js": "Node.js",
+  "NodeJS": "Node.js",
+  "PostgreSQL": "Postgres",
+  "Postgres": "Postgres",
+  "PyTorch": "PyTorch",
+  "Python": "Python",
+  "Python 3": "Python",
+  "React": "React",
+  "React.js": "React",
+  "ReactJS": "React",
+  "Spring": "Spring",
+  "Spring Boot": "Spring Boot",
+  "TS": "TS",
+  "Terraform": "Terraform",
+  "TypeScript": "TS",
+  "k8s": "Kubernetes",
+  "postgres": "Postgres",
+  "python": "Python",
+  "uczenie maszynowe": "ML"
+ },
+ "rfps": [
+  {
+   "id": "RFP-001",
+   "title": "Platforma analityczna dla sieci aptek",
+   "city": "Warszawa",
+   "start_date": "2027-01-01",
+   "team_size": 3,
+   "requirements": [
+    {
+     "skill": "Python",
+     "min_years": 4
+    },
+    {
+     "skill": "Postgres",
+     "min_years": 3
+    },
+    {
+     "skill": "AWS",
+     "min_years": 2
+    }
+   ]
+  },
+  {
+   "id": "RFP-002",
+   "title": "Migracja systemu rozliczeń do chmury",
+   "city": "Kraków",
+   "start_date": "2027-03-01",
+   "team_size": 2,
+   "requirements": [
+    {
+     "skill": "Kubernetes",
+     "min_years": 3
+    },
+    {
+     "skill": "Terraform",
+     "min_years": 2
+    },
+    {
+     "skill": "Docker",
+     "min_years": 3
+    }
+   ]
+  },
+  {
+   "id": "RFP-003",
+   "title": "Portal klienta dla ubezpieczyciela",
+   "city": "Wrocław",
+   "start_date": "2027-02-01",
+   "team_size": 2,
+   "requirements": [
+    {
+     "skill": "React",
+     "min_years": 3
+    },
+    {
+     "skill": "TS",
+     "min_years": 3
+    },
+    {
+     "skill": "Node.js",
+     "min_years": 2
+    }
+   ]
+  }
+ ]
+}

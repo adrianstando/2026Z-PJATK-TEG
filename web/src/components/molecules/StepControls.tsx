@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from "lucide-react"
 import { Slider } from "radix-ui";
 import type { Stepper } from "@/lib/useStepper";
 import { cn } from "@/lib/cn";
+import { StableHeight } from "./StableHeight";
 
 const btn =
   "inline-flex items-center gap-1.5 rounded-full border border-[var(--line-strong)] px-3 py-1.5 text-xs text-fg-muted transition-colors hover:text-fg disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-brand-400";
@@ -11,16 +12,19 @@ const btn =
 /**
  * Molekuła: sterowanie animacją krok po kroku (wspólna dla wszystkich lekcji).
  * `label`: opis bieżącego kroku; `slider`: suwak zamiast kropek (długie procesy).
+ * `labels`: opisy wszystkich kroków; opis ma wtedy wysokość najdłuższego z nich (StableHeight), więc kroki nie przesuwają strony.
  * Przyciski mają własne zdarzenia; strzałki klawiatury nadal przełączają slajdy.
  */
 export function StepControls({
   stepper,
   label,
+  labels,
   slider,
   className,
 }: {
   stepper: Stepper;
   label?: React.ReactNode;
+  labels?: React.ReactNode[];
   slider?: boolean;
   className?: string;
 }) {
@@ -60,12 +64,23 @@ export function StepControls({
           ))}
         </div>
       )}
-      <p className="min-w-[min(100%,14rem)] flex-1 font-mono text-xs text-fg-muted" aria-live="polite">
+      {labels ? (
+        <div className="flex min-w-[min(100%,14rem)] flex-1 gap-[1ch] font-mono text-xs text-fg-muted" aria-live="polite">
+          <span className="shrink-0 text-focus tabular-nums">
+            {step + 1}/{total}
+          </span>
+          <StableHeight variants={labels.map((l, i) => <span key={i}>{l}</span>)} mode="hug" className="flex-1">
+            <span>{label}</span>
+          </StableHeight>
+        </div>
+      ) : (
+        <p className="min-w-[min(100%,14rem)] flex-1 font-mono text-xs text-fg-muted" aria-live="polite">
         <span className="text-focus tabular-nums">
           {step + 1}/{total}
         </span>
         {label != null && <> {label}</>}
-      </p>
+        </p>
+      )}
     </div>
   );
 }

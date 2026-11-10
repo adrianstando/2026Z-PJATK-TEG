@@ -80,7 +80,7 @@ export function ToolCallAnatomyViz({ model }: { model: string }) {
             <p className="mt-auto pt-2 text-xs text-fg-subtle">to samo id łączy wynik z prośbą</p>
           </div>
         </div>
-        <StepControls stepper={st} label={STEPS[step]} className="min-h-[3rem] items-start" />
+        <StepControls stepper={st} label={STEPS[step]} labels={STEPS} />
       </Panel>
       <p className="mt-2 font-mono text-[0.7rem] text-fg-subtle">{model} · zapisany wynik komórki web:tool-call</p>
     </div>

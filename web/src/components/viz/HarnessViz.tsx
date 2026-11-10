@@ -63,7 +63,7 @@ export function HarnessViz() {
             </div>
           </pre>
         </div>
-        <StepControls stepper={st} label={cur.label} className="min-h-[4.5rem] items-start sm:min-h-[3rem]" />
+        <StepControls stepper={st} label={cur.label} labels={STEPS.map((x) => x.label)} />
       </Panel>
     </div>
   );

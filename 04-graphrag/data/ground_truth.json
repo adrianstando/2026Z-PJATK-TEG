@@ -1,0 +1,545 @@
+{
+ "people": [
+  {
+   "name": "Anna Kowalska",
+   "city": "Warszawa",
+   "title": "Senior Backend Developer",
+   "available_from": "2027-01-01",
+   "university": "Politechnika Warszawska",
+   "skills": {
+    "Python": 8,
+    "PostgreSQL": 6,
+    "Docker": 5,
+    "Kubernetes": 3,
+    "AWS": 4
+   },
+   "jobs": [
+    {
+     "company": "Datawise",
+     "role": "Backend Developer",
+     "from": 2017,
+     "to": 2021
+    },
+    {
+     "company": "Northbyte",
+     "role": "Senior Backend Developer",
+     "from": 2021,
+     "to": null
+    }
+   ],
+   "certifications": [
+    "AWS Certified Solutions Architect"
+   ],
+   "project": {
+    "domain": "płatności",
+    "text": "system płatności online (BLIK, karty) dla sieci sklepów internetowych"
+   }
+  },
+  {
+   "name": "Piotr Nowak",
+   "city": "Kraków",
+   "title": "DevOps Engineer",
+   "available_from": "2026-11-01",
+   "university": "AGH",
+   "skills": {
+    "Kubernetes": 5,
+    "Docker": 6,
+    "Terraform": 4,
+    "Go": 3,
+    "AWS": 5
+   },
+   "jobs": [
+    {
+     "company": "Cloudforge",
+     "role": "DevOps Engineer",
+     "from": 2019,
+     "to": null
+    }
+   ],
+   "certifications": [
+    "Certified Kubernetes Administrator"
+   ],
+   "project": {
+    "domain": "płatności",
+    "text": "infrastruktura bramki płatniczej operatora kart z dostępnością 99,99%"
+   }
+  },
+  {
+   "name": "Katarzyna Wiśniewska",
+   "city": "Gdańsk",
+   "title": "Data Scientist",
+   "available_from": "2027-03-01",
+   "university": "Uniwersytet Gdański",
+   "skills": {
+    "Python": 6,
+    "Machine Learning": 5,
+    "PyTorch": 3,
+    "PostgreSQL": 2
+   },
+   "jobs": [
+    {
+     "company": "Baltic Analytics",
+     "role": "Data Analyst",
+     "from": 2019,
+     "to": 2022
+    },
+    {
+     "company": "Datawise",
+     "role": "Data Scientist",
+     "from": 2022,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "medycyna",
+    "text": "medyczny model wykrywający zmiany na zdjęciach RTG dla sieci szpitali"
+   }
+  },
+  {
+   "name": "Tomasz Wójcik",
+   "city": "Warszawa",
+   "title": "Full-stack Developer",
+   "available_from": "2026-12-01",
+   "university": "PJATK",
+   "skills": {
+    "JavaScript": 7,
+    "TypeScript": 5,
+    "React": 5,
+    "Node.js": 5,
+    "PostgreSQL": 3
+   },
+   "jobs": [
+    {
+     "company": "Pixel Harbor",
+     "role": "Frontend Developer",
+     "from": 2018,
+     "to": 2022
+    },
+    {
+     "company": "Northbyte",
+     "role": "Full-stack Developer",
+     "from": 2022,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "e-commerce",
+    "text": "frontend sklepu internetowego z elektroniką i koszyk zakupowy"
+   }
+  },
+  {
+   "name": "Magdalena Kamińska",
+   "city": "Wrocław",
+   "title": "Java Developer",
+   "available_from": "2027-02-01",
+   "university": "Politechnika Wrocławska",
+   "skills": {
+    "Java": 9,
+    "Spring": 7,
+    "Kafka": 4,
+    "Docker": 4,
+    "Kubernetes": 2
+   },
+   "jobs": [
+    {
+     "company": "FinCore",
+     "role": "Java Developer",
+     "from": 2016,
+     "to": null
+    }
+   ],
+   "certifications": [
+    "Oracle Certified Professional Java"
+   ],
+   "project": {
+    "domain": "płatności",
+    "text": "system rozliczania transakcji kartowych w banku"
+   }
+  },
+  {
+   "name": "Michał Lewandowski",
+   "city": "Kraków",
+   "title": "ML Engineer",
+   "available_from": "2026-11-15",
+   "university": "AGH",
+   "skills": {
+    "Python": 7,
+    "PyTorch": 4,
+    "Machine Learning": 6,
+    "Docker": 3,
+    "Kubernetes": 2
+   },
+   "jobs": [
+    {
+     "company": "Cloudforge",
+     "role": "Python Developer",
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "company": "Baltic Analytics",
+     "role": "ML Engineer",
+     "from": 2021,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "medycyna",
+    "text": "klasyfikacja dokumentacji medycznej pacjentów modelami językowymi"
+   }
+  },
+  {
+   "name": "Agnieszka Zielińska",
+   "city": "Poznań",
+   "title": "Cloud Architect",
+   "available_from": "2027-04-01",
+   "university": "Politechnika Poznańska",
+   "skills": {
+    "Azure": 8,
+    "Terraform": 5,
+    "Kubernetes": 6,
+    "Python": 4,
+    "Docker": 6
+   },
+   "jobs": [
+    {
+     "company": "FinCore",
+     "role": "System Engineer",
+     "from": 2014,
+     "to": 2019
+    },
+    {
+     "company": "Cloudforge",
+     "role": "Cloud Architect",
+     "from": 2019,
+     "to": null
+    }
+   ],
+   "certifications": [
+    "Microsoft Certified: Azure Solutions Architect Expert"
+   ],
+   "project": {
+    "domain": "energetyka",
+    "text": "chmura dla systemu zdalnych odczytów liczników energii"
+   }
+  },
+  {
+   "name": "Krzysztof Szymański",
+   "city": "Warszawa",
+   "title": "Frontend Developer",
+   "available_from": "2026-10-15",
+   "university": "Uniwersytet Warszawski",
+   "skills": {
+    "React": 4,
+    "TypeScript": 4,
+    "JavaScript": 5
+   },
+   "jobs": [
+    {
+     "company": "Pixel Harbor",
+     "role": "Frontend Developer",
+     "from": 2021,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "e-commerce",
+    "text": "aplikacja mobilna programu lojalnościowego sieci sklepów"
+   }
+  },
+  {
+   "name": "Ewa Woźniak",
+   "city": "Gdańsk",
+   "title": "Backend Developer",
+   "available_from": "2027-01-15",
+   "university": "Politechnika Gdańska",
+   "skills": {
+    "Go": 4,
+    "PostgreSQL": 5,
+    "Kafka": 3,
+    "Docker": 4,
+    "Kubernetes": 3
+   },
+   "jobs": [
+    {
+     "company": "Baltic Analytics",
+     "role": "Backend Developer",
+     "from": 2020,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "logistyka",
+    "text": "śledzenie przesyłek kurierskich w czasie rzeczywistym"
+   }
+  },
+  {
+   "name": "Paweł Dąbrowski",
+   "city": "Wrocław",
+   "title": "Python Developer",
+   "available_from": "2026-12-15",
+   "university": "Politechnika Wrocławska",
+   "skills": {
+    "Python": 3,
+    "PostgreSQL": 3,
+    "AWS": 2,
+    "Docker": 2
+   },
+   "jobs": [
+    {
+     "company": "Datawise",
+     "role": "Junior Python Developer",
+     "from": 2023,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "medycyna",
+    "text": "API do rejestracji wizyt w przychodniach"
+   }
+  },
+  {
+   "name": "Joanna Kozłowska",
+   "city": "Poznań",
+   "title": "Engineering Manager",
+   "available_from": "2027-05-01",
+   "university": "Politechnika Poznańska",
+   "skills": {
+    "Java": 10,
+    "Spring": 8,
+    "AWS": 6,
+    "Kubernetes": 4
+   },
+   "jobs": [
+    {
+     "company": "FinCore",
+     "role": "Team Leader",
+     "from": 2013,
+     "to": 2020
+    },
+    {
+     "company": "Northbyte",
+     "role": "Engineering Manager",
+     "from": 2020,
+     "to": null
+    }
+   ],
+   "certifications": [
+    "AWS Certified Solutions Architect"
+   ],
+   "project": {
+    "domain": "płatności",
+    "text": "zespół rozwijający platformę płatności odroczonych"
+   }
+  },
+  {
+   "name": "Marcin Jankowski",
+   "city": "Kraków",
+   "title": "Data Engineer",
+   "available_from": "2026-11-01",
+   "university": "Uniwersytet Jagielloński",
+   "skills": {
+    "Python": 5,
+    "Kafka": 4,
+    "AWS": 3,
+    "PostgreSQL": 4
+   },
+   "jobs": [
+    {
+     "company": "Baltic Analytics",
+     "role": "Data Engineer",
+     "from": 2021,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "płatności",
+    "text": "przetwarzanie strumienia transakcji płatniczych pod kątem wykrywania nadużyć"
+   }
+  },
+  {
+   "name": "Natalia Mazur",
+   "city": "Warszawa",
+   "title": "Full-stack Developer",
+   "available_from": "2027-02-15",
+   "university": "PJATK",
+   "skills": {
+    "TypeScript": 3,
+    "React": 3,
+    "Node.js": 3,
+    "Python": 2
+   },
+   "jobs": [
+    {
+     "company": "Pixel Harbor",
+     "role": "Junior Developer",
+     "from": 2022,
+     "to": 2024
+    },
+    {
+     "company": "Datawise",
+     "role": "Full-stack Developer",
+     "from": 2024,
+     "to": null
+    }
+   ],
+   "certifications": [],
+   "project": {
+    "domain": "medycyna",
+    "text": "portal pacjenta z wynikami badań laboratoryjnych"
+   }
+  },
+  {
+   "name": "Bartosz Krawczyk",
+   "city": "Gdańsk",
+   "title": "Site Reliability Engineer",
+   "available_from": "2027-03-15",
+   "university": "Politechnika Gdańska",
+   "skills": {
+    "Go": 5,
+    "Kubernetes": 4,
+    "Terraform": 3,
+    "Python": 3,
+    "Azure": 2
+   },
+   "jobs": [
+    {
+     "company": "Northbyte",
+     "role": "SRE",
+     "from": 2019,
+     "to": 2023
+    },
+    {
+     "company": "Cloudforge",
+     "role": "Senior SRE",
+     "from": 2023,
+     "to": null
+    }
+   ],
+   "certifications": [
+    "Certified Kubernetes Administrator"
+   ],
+   "project": {
+    "domain": "medycyna",
+    "text": "monitoring i niezawodność platformy telemedycznej"
+   }
+  }
+ ],
+ "rfps": [
+  {
+   "id": "RFP-001",
+   "title": "Platforma analityczna dla sieci aptek",
+   "city": "Warszawa",
+   "start": "2027-01-01",
+   "team_size": 3,
+   "requirements": {
+    "Python": 4,
+    "PostgreSQL": 3,
+    "AWS": 2
+   }
+  },
+  {
+   "id": "RFP-002",
+   "title": "Migracja systemu rozliczeń do chmury",
+   "city": "Kraków",
+   "start": "2027-03-01",
+   "team_size": 2,
+   "requirements": {
+    "Kubernetes": 3,
+    "Terraform": 2,
+    "Docker": 3
+   }
+  },
+  {
+   "id": "RFP-003",
+   "title": "Portal klienta dla ubezpieczyciela",
+   "city": "Wrocław",
+   "start": "2027-02-01",
+   "team_size": 2,
+   "requirements": {
+    "React": 3,
+    "TypeScript": 3,
+    "Node.js": 2
+   }
+  }
+ ],
+ "aliases": {
+  "Python": [
+   "Python",
+   "Python 3",
+   "python"
+  ],
+  "Kubernetes": [
+   "Kubernetes",
+   "K8s",
+   "k8s"
+  ],
+  "PostgreSQL": [
+   "PostgreSQL",
+   "Postgres",
+   "postgres"
+  ],
+  "JavaScript": [
+   "JavaScript",
+   "JS"
+  ],
+  "TypeScript": [
+   "TypeScript",
+   "TS"
+  ],
+  "React": [
+   "React",
+   "React.js",
+   "ReactJS"
+  ],
+  "AWS": [
+   "AWS",
+   "Amazon Web Services"
+  ],
+  "Docker": [
+   "Docker"
+  ],
+  "Java": [
+   "Java"
+  ],
+  "Spring": [
+   "Spring",
+   "Spring Boot"
+  ],
+  "Go": [
+   "Go",
+   "Golang"
+  ],
+  "Terraform": [
+   "Terraform"
+  ],
+  "PyTorch": [
+   "PyTorch"
+  ],
+  "Machine Learning": [
+   "Machine Learning",
+   "uczenie maszynowe",
+   "ML"
+  ],
+  "Azure": [
+   "Azure",
+   "Microsoft Azure"
+  ],
+  "Kafka": [
+   "Kafka",
+   "Apache Kafka"
+  ],
+  "Node.js": [
+   "Node.js",
+   "Node",
+   "NodeJS"
+  ]
+ }
+}

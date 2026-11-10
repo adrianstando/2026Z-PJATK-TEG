@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type RefObject } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 
 export type Stepper = {
@@ -18,6 +18,12 @@ export type Stepper = {
 };
 
 /**
+ * Wymuszony krok dla niewidocznej kopii animacji (StableSteps): "last" albo numer kroku.
+ * Kopia rezerwuje wysokość wybranego stanu, a widoczna animacja działa normalnie.
+ */
+export const ForcedStepContext = createContext<number | "last" | null>(null);
+
+/**
  * Wspólny hook animacji krok po kroku (0…total−1).
  * Start po Play albo ręcznym kroku (DESIGN.md: bez autoplay). autoplay: true = kroki przechodzą same co `interval` ms, raz, po wejściu w kadr; każda ręczna zmiana zatrzymuje.
  * Przy prefers-reduced-motion i autoplay od razu ostatni krok, bez odtwarzania; ręczne sterowanie działa dalej.
@@ -31,8 +37,9 @@ export function useStepper(total: number, { autoplay = false, interval = 1600 }:
   const [playing, setPlaying] = useState(autoplay);
   // dopóki nikt nie kliknął, reduced motion pokazuje gotowy wynik zamiast odtwarzania
   const [touched, setTouched] = useState(false);
-  const frozen = !!reduce && !touched;
-  const shown = frozen && autoplay ? last : Math.min(step, last);
+  const forced = useContext(ForcedStepContext);
+  const frozen = (!!reduce && !touched) || forced != null;
+  const shown = forced != null ? (forced === "last" ? last : Math.min(Math.max(0, forced), last)) : frozen && autoplay ? last : Math.min(step, last);
   const isPlaying = playing && !frozen;
 
   useEffect(() => {

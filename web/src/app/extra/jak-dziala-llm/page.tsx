@@ -6,6 +6,7 @@ import { Slide } from "@/components/site/Slide";
 import { HeroTitle } from "@/components/lesson/HeroTitle";
 import { SectionHeading } from "@/components/molecules/SectionHeading";
 import { Callout } from "@/components/molecules/Callout";
+import { StableSteps } from "@/components/molecules/StableSteps";
 import { Reveal } from "@/components/motion/Reveal";
 import { Panel } from "@/components/ui/Panel";
 import { BpeViz } from "@/components/viz/internals/BpeViz";
@@ -198,7 +199,7 @@ export default function LlmInternals() {
             lead="Wektory tokenów płyną przez wszystkie bloki, a każdy blok dodaje do nich swoją poprawkę. Z ostatniego stanu ostatniego tokenu powstaje rozkład następnego tokenu."
           />
           <Reveal delay={0.2} className="mt-12">
-            <ResidualViz />
+            <StableSteps><ResidualViz /></StableSteps>
           </Reveal>
         </Slide>
 
@@ -227,7 +228,7 @@ export default function LlmInternals() {
             lead="Wybrany token dopisuje się na koniec wejścia i cały przebieg się powtarza, aż model wygeneruje token końca albo osiągnie limit długości."
           />
           <Reveal delay={0.2} className="mt-12">
-            <GenerationViz />
+            <StableSteps><GenerationViz /></StableSteps>
           </Reveal>
           <Reveal delay={0.3} className="mt-6">
             <Callout>

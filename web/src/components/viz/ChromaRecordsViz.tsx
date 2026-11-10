@@ -27,7 +27,7 @@ export function ChromaRecordsViz() {
 
   return (
     <div ref={st.ref} className="space-y-4">
-      <StepControls stepper={st} label={LABELS[st.step]} />
+      <StepControls stepper={st} label={LABELS[st.step]} labels={LABELS} />
       <Panel className="p-4 md:p-6">
         {st.step >= 1 && <p className="mb-3 font-mono text-xs text-focus">query: „{steps.chroma.q}”</p>}
         <div className="overflow-x-auto">

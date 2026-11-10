@@ -1,7 +1,7 @@
 "use client";
 
 import { ReplayFlow, type FlowEvent, type FlowLayout } from "@/components/viz/ReplayFlow";
-import { REACT } from "@/content/lesson03/snippets";
+import { REACT, type LoopEvent } from "@/content/lesson03/snippets";
 
 // Cykl thinking → action → observation wraca do thinking; wyjście z pętli to odpowiedź tekstem.
 const node = (W: number, H: number, nodeW: number, nodeH: number) => (id: string, label: string, sub: string, fx: number, fy: number, terminal = false) => ({
@@ -25,23 +25,27 @@ const narrow = (() => {
 
 const TAG = { think: "thinking", act: "action", observe: "observation", answer: "answer" } as const;
 // liczba tokenów wysłanych do modelu przy pierwszym zdarzeniu każdego kroku (zawsze thinking)
-const EVENTS: FlowEvent[] = REACT.map((e) => ({
-  node: e.kind,
-  tag: e.kind === "answer" ? TAG.answer : `${TAG[e.kind]} · krok ${e.step}`,
-  text: e.text,
-  meta: e.kind === "think" ? `wysłano ${e.tokens} tok.` : undefined,
-}));
+const loopEvents = (raw: LoopEvent[]): FlowEvent[] =>
+  raw.map((e) => ({
+    node: e.kind,
+    tag: e.kind === "answer" ? TAG.answer : `${TAG[e.kind]} · krok ${e.step}`,
+    text: e.text,
+    meta: e.kind === "think" ? `wysłano ${e.tokens} tok.` : undefined,
+  }));
 
-/** Organizm: pętla ReAct odtworzona z zapisanego przebiegu `react()` w notebooku. */
-export function AgentLoopViz({ model }: { model: string }) {
+/**
+ * Organizm: pętla ReAct odtworzona z zapisanego przebiegu agenta w notebooku.
+ * Domyślnie `react()` z zajęć 3; `events` pozwala odtworzyć inny przebieg w tym samym formacie (np. agent z run_cypher).
+ */
+export function AgentLoopViz({ model, events, caption }: { model: string; events?: LoopEvent[]; caption?: string }) {
   return (
     <ReplayFlow
       layouts={{ wide, narrow }}
       edges={[["q", "think"], ["think", "act"], ["act", "observe"], ["observe", "think"], ["think", "answer"]]}
-      events={EVENTS}
+      events={loopEvents(events ?? REACT)}
       start="q"
       label="Pętla ReAct"
-      caption={`${model} · zapisany przebieg z notebooka`}
+      caption={caption ?? `${model} · zapisany przebieg z notebooka`}
     />
   );
 }

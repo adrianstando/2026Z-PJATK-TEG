@@ -28,7 +28,7 @@ The site is static: no API routes, no model calls in the browser, no keys. Visua
 2. **Interactions via Radix** (Slider, ToggleGroup, Tabs), with `aria-label` on the element that has the role.
 3. **Animation shows a process step** ([references/motion.md](references/motion.md)) and respects `prefers-reduced-motion`.
 4. **Slide content** per [references/presentation.md](references/presentation.md); code and outputs from the notebook (skill `notebook-format`).
-5. **Every change checked at 1440×900 and 390×844**, with an empty browser console ([references/responsive-and-pitfalls.md](references/responsive-and-pitfalls.md)).
+5. **Every change checked at 1440×900, 720×900 and 390×844**, with an empty browser console and stable slide height while stepping animations ([references/responsive-and-pitfalls.md](references/responsive-and-pitfalls.md)).
 
 ## New lesson section
 

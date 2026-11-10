@@ -7,6 +7,7 @@ import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
 import { useStepper } from "@/lib/useStepper";
 import { useNarrow } from "@/lib/useMediaQuery";
+import { useSvgPx } from "@/lib/useSvgPx";
 
 export type FlowNode = { id: string; label: string; sub?: string; x: number; y: number; terminal?: boolean };
 export type FlowLayout = { W: number; H: number; font: number; nodeW: number; nodeH: number; token: number; nodes: FlowNode[] };
@@ -40,7 +41,10 @@ export function ReplayFlow({
   const st = useStepper(events.length + 1, { interval: STEP_MS });
   const logRef = useRef<HTMLOListElement>(null);
   const reduced = useReducedMotion();
-  const L = useNarrow() ? layouts.narrow : layouts.wide;
+  const L0 = useNarrow() ? layouts.narrow : layouts.wide;
+  // czcionka w węzłach najwyżej ~17 px na ekranie: na szerokim panelu diagram się powiększa, tekst nie
+  const { ref: svgRef, px } = useSvgPx(L0.W);
+  const L = { ...L0, font: Math.min(L0.font, px(17, L0.font)) };
   const shown = st.step - 1;
 
   useEffect(() => {
@@ -57,7 +61,7 @@ export function ReplayFlow({
   return (
     <div ref={st.ref} className="grid gap-5 lg:grid-cols-[1.1fr_1fr]">
       <Panel className="flex flex-col p-3 md:p-4">
-        <svg viewBox={`0 0 ${L.W} ${L.H}`} className="h-auto w-full" role="img" aria-label={label}>
+        <svg ref={svgRef} viewBox={`0 0 ${L.W} ${L.H}`} className="h-auto w-full" role="img" aria-label={label}>
           <defs>
             <marker id={`arrow-${label.length}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0,0 L10,5 L0,10 z" fill="var(--line-strong)" />
@@ -136,8 +140,8 @@ export function ReplayFlow({
           />
         </svg>
         <div className="mt-auto space-y-3 px-1 pt-3">
-          <StepControls stepper={st} label={shown >= 0 ? events[shown].tag : "start"} className="min-h-[3rem] items-start" />
-          <p className="min-h-[2.25rem] font-mono text-[0.7rem] text-fg-subtle">
+          <StepControls stepper={st} label={shown >= 0 ? events[shown].tag : "start"} labels={["start", ...events.map((e) => e.tag)]} />
+          <p className="font-mono text-[0.7rem] text-fg-subtle">
             {caption}
             {state && <span className="block text-focus">{state(shown)}</span>}
           </p>

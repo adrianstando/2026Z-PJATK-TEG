@@ -79,7 +79,7 @@ export function MemoryViz({ model }: { model: string }) {
           </div>
           <Thread id="t2" turns={t2} activeIndex={0} active={step === 2 || step === 6} saved={t2.length > 0} />
         </div>
-        <StepControls stepper={st} label={STEPS[step]} className="min-h-[3rem] items-start" />
+        <StepControls stepper={st} label={STEPS[step]} labels={STEPS} />
       </Panel>
       <p className="mt-2 font-mono text-[0.7rem] text-fg-subtle">{model} · InMemorySaver + InMemoryStore · zapisany wynik komórek web:memory i web:store</p>
     </div>

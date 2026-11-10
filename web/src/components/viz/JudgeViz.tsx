@@ -31,7 +31,7 @@ export function JudgeViz({ cases, model }: { cases: JudgeCase[]; model: string }
   const labels = cases.flatMap((x) => [`${x.name}: odpowiedź do oceny`, `${x.name}: werdykt sędziego`]);
   return (
     <div ref={st.ref} className="space-y-4">
-      <StepControls stepper={st} label={labels[st.step]} />
+      <StepControls stepper={st} label={labels[st.step]} labels={labels} />
       <AnimatePresence mode="wait">
         <motion.div key={c.name} initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
           <Panel className="grid gap-5 p-5 md:grid-cols-[1fr_18rem] md:p-6">

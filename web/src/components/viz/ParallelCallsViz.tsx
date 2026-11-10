@@ -54,7 +54,7 @@ export function ParallelCallsViz({ model }: { model: string }) {
             <p className="mt-1 font-mono text-xs tabular-nums text-fg-subtle">wysłano {OUT} tok.</p>
           </div>
         </div>
-        <StepControls stepper={st} label={STEPS[step]} className="min-h-[3rem] items-start" />
+        <StepControls stepper={st} label={STEPS[step]} labels={STEPS} />
       </Panel>
       <p className="mt-2 font-mono text-[0.7rem] text-fg-subtle">{model} · krok {STEP} z zapisanego przebiegu react(parallel=True)</p>
     </div>

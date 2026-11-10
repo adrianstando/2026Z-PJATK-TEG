@@ -1,0 +1,566 @@
+{
+ "01_anna_kowalska": {
+  "name": "Anna Kowalska",
+  "city": "Warszawa",
+  "title": "Senior Backend Developer",
+  "available_from": "2027-01-01",
+  "university": "Politechnika Warszawska",
+  "skills": [
+   {
+    "name": "Python",
+    "years": 8
+   },
+   {
+    "name": "Postgres",
+    "years": 6
+   },
+   {
+    "name": "Docker",
+    "years": 5
+   },
+   {
+    "name": "K8s",
+    "years": 3
+   },
+   {
+    "name": "AWS",
+    "years": 4
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Datawise",
+    "role": "Backend Developer",
+    "start_year": 2017,
+    "end_year": 2021
+   },
+   {
+    "company": "Northbyte",
+    "role": "Senior Backend Developer",
+    "start_year": 2021,
+    "end_year": null
+   }
+  ],
+  "certifications": [
+   "AWS Certified Solutions Architect"
+  ]
+ },
+ "02_piotr_nowak": {
+  "name": "Piotr Nowak",
+  "city": "Kraków",
+  "title": "DevOps Engineer",
+  "available_from": "2026-11-01",
+  "university": "AGH",
+  "skills": [
+   {
+    "name": "Kubernetes",
+    "years": 5
+   },
+   {
+    "name": "Docker",
+    "years": 6
+   },
+   {
+    "name": "Terraform",
+    "years": 4
+   },
+   {
+    "name": "Golang",
+    "years": 3
+   },
+   {
+    "name": "Amazon Web Services",
+    "years": 5
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Cloudforge",
+    "role": "DevOps Engineer",
+    "start_year": 2019,
+    "end_year": null
+   }
+  ],
+  "certifications": [
+   "Certified Kubernetes Administrator"
+  ]
+ },
+ "03_katarzyna_wisniewska": {
+  "name": "Katarzyna Wiśniewska",
+  "city": "Gdańsk",
+  "title": "Data Scientist",
+  "available_from": "2027-03-01",
+  "university": "Uniwersytet Gdański",
+  "skills": [
+   {
+    "name": "Python 3",
+    "years": 6
+   },
+   {
+    "name": "uczenie maszynowe",
+    "years": 5
+   },
+   {
+    "name": "PyTorch",
+    "years": 3
+   },
+   {
+    "name": "PostgreSQL",
+    "years": 2
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Baltic Analytics",
+    "role": "Data Analyst",
+    "start_year": 2019,
+    "end_year": 2022
+   },
+   {
+    "company": "Datawise",
+    "role": "Data Scientist",
+    "start_year": 2022,
+    "end_year": null
+   }
+  ],
+  "certifications": []
+ },
+ "04_tomasz_wojcik": {
+  "name": "Tomasz Wójcik",
+  "city": "Warszawa",
+  "title": "Full-stack Developer",
+  "available_from": "2026-12-01",
+  "university": "PJATK",
+  "skills": [
+   {
+    "name": "JS",
+    "years": 7
+   },
+   {
+    "name": "TypeScript",
+    "years": 5
+   },
+   {
+    "name": "React.js",
+    "years": 5
+   },
+   {
+    "name": "NodeJS",
+    "years": 5
+   },
+   {
+    "name": "postgres",
+    "years": 3
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Northbyte",
+    "role": "Full-stack Developer",
+    "start_year": 2022,
+    "end_year": null
+   },
+   {
+    "company": "Pixel Harbor",
+    "role": "Frontend Developer",
+    "start_year": 2018,
+    "end_year": 2022
+   }
+  ],
+  "certifications": []
+ },
+ "05_magdalena_kaminska": {
+  "name": "Magdalena Kamińska",
+  "city": "Wrocław",
+  "title": "Java Developer",
+  "available_from": "2027-02-01",
+  "university": "Politechnika Wrocławska",
+  "skills": [
+   {
+    "name": "Java",
+    "years": 9
+   },
+   {
+    "name": "Spring Boot",
+    "years": 7
+   },
+   {
+    "name": "Apache Kafka",
+    "years": 4
+   },
+   {
+    "name": "Docker",
+    "years": 4
+   },
+   {
+    "name": "Kubernetes",
+    "years": 2
+   }
+  ],
+  "jobs": [
+   {
+    "company": "FinCore",
+    "role": "Java Developer",
+    "start_year": 2016,
+    "end_year": null
+   }
+  ],
+  "certifications": [
+   "Oracle Certified Professional Java"
+  ]
+ },
+ "06_michal_lewandowski": {
+  "name": "Michał Lewandowski",
+  "city": "Kraków",
+  "title": "ML Engineer",
+  "available_from": "2026-11-15",
+  "university": "AGH",
+  "skills": [
+   {
+    "name": "Python",
+    "years": 7
+   },
+   {
+    "name": "PyTorch",
+    "years": 4
+   },
+   {
+    "name": "ML",
+    "years": 6
+   },
+   {
+    "name": "Docker",
+    "years": 3
+   },
+   {
+    "name": "k8s",
+    "years": 2
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Baltic Analytics",
+    "role": "ML Engineer",
+    "start_year": 2021,
+    "end_year": null
+   },
+   {
+    "company": "Cloudforge",
+    "role": "Python Developer",
+    "start_year": 2018,
+    "end_year": 2021
+   }
+  ],
+  "certifications": []
+ },
+ "07_agnieszka_zielinska": {
+  "name": "Agnieszka Zielińska",
+  "city": "Poznań",
+  "title": "Cloud Architect",
+  "available_from": "2027-04-01",
+  "university": "Politechnika Poznańska",
+  "skills": [
+   {
+    "name": "Microsoft Azure",
+    "years": 8
+   },
+   {
+    "name": "Terraform",
+    "years": 5
+   },
+   {
+    "name": "K8s",
+    "years": 6
+   },
+   {
+    "name": "Python",
+    "years": 4
+   },
+   {
+    "name": "Docker",
+    "years": 6
+   }
+  ],
+  "jobs": [
+   {
+    "company": "FinCore",
+    "role": "System Engineer",
+    "start_year": 2014,
+    "end_year": 2019
+   },
+   {
+    "company": "Cloudforge",
+    "role": "Cloud Architect",
+    "start_year": 2019,
+    "end_year": null
+   }
+  ],
+  "certifications": [
+   "Microsoft Certified: Azure Solutions Architect Expert"
+  ]
+ },
+ "08_krzysztof_szymanski": {
+  "name": "Krzysztof Szymański",
+  "city": "Warszawa",
+  "title": "Frontend Developer",
+  "available_from": "2026-10-15",
+  "university": "Uniwersytet Warszawski",
+  "skills": [
+   {
+    "name": "React",
+    "years": 4
+   },
+   {
+    "name": "TS",
+    "years": 4
+   },
+   {
+    "name": "JavaScript",
+    "years": 5
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Pixel Harbor",
+    "role": "Frontend Developer",
+    "start_year": 2021,
+    "end_year": null
+   }
+  ],
+  "certifications": []
+ },
+ "09_ewa_wozniak": {
+  "name": "Ewa Woźniak",
+  "city": "Gdańsk",
+  "title": "Backend Developer",
+  "available_from": "2027-01-15",
+  "university": "Politechnika Gdańska",
+  "skills": [
+   {
+    "name": "Go",
+    "years": 4
+   },
+   {
+    "name": "PostgreSQL",
+    "years": 5
+   },
+   {
+    "name": "Kafka",
+    "years": 3
+   },
+   {
+    "name": "Docker",
+    "years": 4
+   },
+   {
+    "name": "Kubernetes",
+    "years": 3
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Baltic Analytics",
+    "role": "Backend Developer",
+    "start_year": 2020,
+    "end_year": null
+   }
+  ],
+  "certifications": []
+ },
+ "10_pawel_dabrowski": {
+  "name": "Paweł Dąbrowski",
+  "city": "Wrocław",
+  "title": "Python Developer",
+  "available_from": "2026-12-15",
+  "university": "Politechnika Wrocławska",
+  "skills": [
+   {
+    "name": "Python",
+    "years": 3
+   },
+   {
+    "name": "Postgres",
+    "years": 3
+   },
+   {
+    "name": "Amazon Web Services",
+    "years": 2
+   },
+   {
+    "name": "Docker",
+    "years": 2
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Datawise",
+    "role": "Junior Python Developer",
+    "start_year": 2023,
+    "end_year": null
+   }
+  ],
+  "certifications": []
+ },
+ "11_joanna_kozlowska": {
+  "name": "Joanna Kozłowska",
+  "city": "Poznań",
+  "title": "Engineering Manager",
+  "available_from": "2027-05-01",
+  "university": "Politechnika Poznańska",
+  "skills": [
+   {
+    "name": "Java",
+    "years": 10
+   },
+   {
+    "name": "Spring",
+    "years": 8
+   },
+   {
+    "name": "AWS",
+    "years": 6
+   },
+   {
+    "name": "k8s",
+    "years": 4
+   }
+  ],
+  "jobs": [
+   {
+    "company": "FinCore",
+    "role": "Team Leader",
+    "start_year": 2013,
+    "end_year": 2020
+   },
+   {
+    "company": "Northbyte",
+    "role": "Engineering Manager",
+    "start_year": 2020,
+    "end_year": null
+   }
+  ],
+  "certifications": [
+   "AWS Certified Solutions Architect"
+  ]
+ },
+ "12_marcin_jankowski": {
+  "name": "Marcin Jankowski",
+  "city": "Kraków",
+  "title": "Data Engineer",
+  "available_from": "2026-11-01",
+  "university": "Uniwersytet Jagielloński",
+  "skills": [
+   {
+    "name": "python",
+    "years": 5
+   },
+   {
+    "name": "Kafka",
+    "years": 4
+   },
+   {
+    "name": "AWS",
+    "years": 3
+   },
+   {
+    "name": "PostgreSQL",
+    "years": 4
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Baltic Analytics",
+    "role": "Data Engineer",
+    "start_year": 2021,
+    "end_year": null
+   }
+  ],
+  "certifications": []
+ },
+ "13_natalia_mazur": {
+  "name": "Natalia Mazur",
+  "city": "Warszawa",
+  "title": "Full-stack Developer",
+  "available_from": "2027-02-15",
+  "university": "PJATK",
+  "skills": [
+   {
+    "name": "TypeScript",
+    "years": 3
+   },
+   {
+    "name": "ReactJS",
+    "years": 3
+   },
+   {
+    "name": "Node.js",
+    "years": 3
+   },
+   {
+    "name": "Python",
+    "years": 2
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Pixel Harbor",
+    "role": "Junior Developer",
+    "start_year": 2022,
+    "end_year": 2024
+   },
+   {
+    "company": "Datawise",
+    "role": "Full-stack Developer",
+    "start_year": 2024,
+    "end_year": null
+   }
+  ],
+  "certifications": []
+ },
+ "14_bartosz_krawczyk": {
+  "name": "Bartosz Krawczyk",
+  "city": "Gdańsk",
+  "title": "Site Reliability Engineer",
+  "available_from": "2027-03-15",
+  "university": "Politechnika Gdańska",
+  "skills": [
+   {
+    "name": "Go",
+    "years": 5
+   },
+   {
+    "name": "Kubernetes",
+    "years": 4
+   },
+   {
+    "name": "Terraform",
+    "years": 3
+   },
+   {
+    "name": "Python",
+    "years": 3
+   },
+   {
+    "name": "Azure",
+    "years": 2
+   }
+  ],
+  "jobs": [
+   {
+    "company": "Cloudforge",
+    "role": "Senior SRE",
+    "start_year": 2023,
+    "end_year": null
+   },
+   {
+    "company": "Northbyte",
+    "role": "SRE",
+    "start_year": 2019,
+    "end_year": 2023
+   }
+  ],
+  "certifications": [
+   "Certified Kubernetes Administrator"
+  ]
+ }
+}

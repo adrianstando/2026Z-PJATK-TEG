@@ -30,7 +30,7 @@ export function Bm25StepsViz() {
 
   return (
     <div ref={st.ref} className="space-y-4">
-      <StepControls stepper={st} label={LABELS[st.step]} />
+      <StepControls stepper={st} label={LABELS[st.step]} labels={LABELS} />
       <Panel className="min-h-[18rem] p-5 md:p-6">
         <div className="flex flex-wrap gap-2">
           {B.raw.map((w, i) => {

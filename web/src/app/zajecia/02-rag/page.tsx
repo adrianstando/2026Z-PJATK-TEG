@@ -9,6 +9,7 @@ import { CodeBlock } from "@/components/molecules/CodeBlock";
 import { Terminal } from "@/components/molecules/Terminal";
 import { Callout } from "@/components/molecules/Callout";
 import { Formula } from "@/components/molecules/Formula";
+import { StableSteps } from "@/components/molecules/StableSteps";
 import { Reveal } from "@/components/motion/Reveal";
 import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
@@ -130,7 +131,7 @@ export default function Lesson02() {
             lead="Pytanie przechodzi przez ten sam model embeddingów co chunki. Wyszukiwanie to wybór k chunków o największym cosinusie z wektorem pytania."
           />
           <Reveal delay={0.2} className="mt-12">
-            <QuerySpaceViz />
+            <StableSteps steps={[0, 1, 2, 3]}><QuerySpaceViz /></StableSteps>
           </Reveal>
         </Slide>
 
@@ -143,7 +144,7 @@ export default function Lesson02() {
             lead="ChromaDB to jedna z wektorowych baz danych; oprócz wektora przechowuje też treść chunku i jego metadane. Przykład: firma ma dwie wersje polityki pracy zdalnej, obowiązujące w różnych latach. Obie zostają w bazie, bo użytkownicy pytają też o wcześniejsze ustalenia. Filtr where (filtrowanie po metadanych) sprawia, że do kontekstu trafiają tylko fragmenty z pasujących dokumentów."
           />
           <Reveal delay={0.2} className="mt-12">
-            <ChromaRecordsViz />
+            <StableSteps><ChromaRecordsViz /></StableSteps>
           </Reveal>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <Reveal delay={0.1}>
@@ -172,7 +173,7 @@ export default function Lesson02() {
             lead="Cały RAG to kilka linii: wyszukanie, sklejenie kontekstu, jedno wywołanie modelu. Instrukcja wymaga odpowiedzi tylko z kontekstu, „Nie wiem” przy braku informacji i podania źródeł."
           />
           <Reveal delay={0.2} className="mt-12">
-            <RagPipelineViz answer={S.RAG_ANSWER} model={S.MODELS.chat} />
+            <StableSteps steps={[0, 1, 2, 3, 4]}><RagPipelineViz answer={S.RAG_ANSWER} model={S.MODELS.chat} /></StableSteps>
           </Reveal>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <div className="space-y-4">
@@ -184,7 +185,9 @@ export default function Lesson02() {
               </Reveal>
             </div>
             <Reveal delay={0.2}>
-              <PromptBuildViz />
+              <StableSteps>
+                <PromptBuildViz />
+              </StableSteps>
             </Reveal>
           </div>
         </Slide>
@@ -235,7 +238,7 @@ export default function Lesson02() {
             />
           </Reveal>
           <Reveal delay={0.2} className="mt-6">
-            <Bm25StepsViz />
+            <StableSteps><Bm25StepsViz /></StableSteps>
           </Reveal>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <Reveal delay={0.1}>
@@ -273,7 +276,7 @@ export default function Lesson02() {
               <CodeBlock code={rrfFn} title="notebook.ipynb · rrf()" highlight={[4, 5]} />
             </Reveal>
             <Reveal delay={0.2}>
-              <RrfStepsViz />
+              <StableSteps><RrfStepsViz /></StableSteps>
             </Reveal>
           </div>
         </Slide>
@@ -336,7 +339,7 @@ export default function Lesson02() {
             </div>
           </div>
           <Reveal delay={0.2} className="mt-8">
-            <EvalMetricsViz />
+            <StableSteps><EvalMetricsViz /></StableSteps>
           </Reveal>
         </Slide>
 
@@ -362,7 +365,7 @@ export default function Lesson02() {
             </div>
           </div>
           <Reveal delay={0.2} className="mt-6">
-            <JudgeViz cases={S.JUDGE_CASES} model={S.MODELS.chat} />
+            <StableSteps steps={S.JUDGE_CASES.flatMap((_, i) => [2 * i, 2 * i + 1])}><JudgeViz cases={S.JUDGE_CASES} model={S.MODELS.chat} /></StableSteps>
           </Reveal>
           <Reveal delay={0.4} className="mt-6">
             <Callout kind="warning">Same oceny 1/1 nie dowodzą, że sędzia działa. Przypadki kontrolne (dopisana halucynacja, odpowiedź z nieaktualnej polityki) pokazują, że tu odróżnia wierność od poprawności. Sędzia jest modelem i też się myli, więc kontrole uruchamia się przy każdej zmianie promptu albo modelu.</Callout>

@@ -58,7 +58,7 @@ export function QuerySpaceViz() {
           ))}
         </ToggleGroup.Root>
       </div>
-      <StepControls stepper={st} label={LABELS[st.step]} />
+      <StepControls stepper={st} label={LABELS[st.step]} labels={LABELS} />
       <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
         <Panel className="p-2">
           <svg viewBox={`0 0 ${L.W} ${L.H}`} className="h-auto w-full" role="img" aria-label="Pytanie w przestrzeni chunków">

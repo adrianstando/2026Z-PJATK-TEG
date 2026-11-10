@@ -32,7 +32,7 @@ export function EvalMetricsViz() {
 
   return (
     <div ref={st.ref} className="space-y-4">
-      <StepControls stepper={st} label={LABELS[st.step]} />
+      <StepControls stepper={st} label={LABELS[st.step]} labels={LABELS} />
       <Panel className="overflow-x-auto p-4 md:p-5">
         <table className="w-full min-w-[34rem] font-mono text-xs">
           <thead>

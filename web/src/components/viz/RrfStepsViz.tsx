@@ -45,7 +45,7 @@ export function RrfStepsViz() {
 
   return (
     <div ref={st.ref} className="space-y-4">
-      <StepControls stepper={st} label={LABELS[st.step]} />
+      <StepControls stepper={st} label={LABELS[st.step]} labels={LABELS} />
       <p className="font-mono text-xs text-focus">„{R.q}”</p>
       <div className="grid gap-4 lg:grid-cols-3">
         <List title="Wektory" ids={R.vector} />

@@ -6,6 +6,7 @@ import raw from "@/data/llm-internals.json";
 import { Panel } from "@/components/ui/Panel";
 import { StickySteps } from "@/components/molecules/StickySteps";
 import { useStepper } from "@/lib/useStepper";
+import { StableSteps } from "@/components/molecules/StableSteps";
 import { cn } from "@/lib/cn";
 
 const d = (raw.gpt2 as { d: number }).d;
@@ -34,7 +35,18 @@ const LAYERS = [
 ];
 
 /** Organizm: budowa jednego bloku transformera krok po kroku (LayerNorm, atencja, residual, MLP) i specjalizacja warstw. */
+/** wszystkie kroki: rezerwa wysokości w StableSteps */
+const BLOCK_STEPS = Array.from({ length: PARTS.length }, (_, i) => i);
+
 export function BlockViz() {
+  return (
+    <StableSteps steps={BLOCK_STEPS}>
+      <BlockVizInner />
+    </StableSteps>
+  );
+}
+
+function BlockVizInner() {
   const st = useStepper(PARTS.length, { autoplay: false });
   const s = st.step;
   // połączenia residualne: od wejścia każdego „⊕” (poprzedni punkt strumienia) do niego samego, rysowane po lewej

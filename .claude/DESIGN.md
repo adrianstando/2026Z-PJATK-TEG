@@ -176,13 +176,16 @@ Geist for text, Geist Mono for code, numbers in visualizations and eyebrows. Hie
 - **Headline:** section heading, 36 px on phone, 60 px from `md`. The heading is a thesis (e.g. „Token jest podstawową jednostką”), not a topic name.
 - **Eyebrow:** overline above the heading, mono, uppercase, tracked, format „NN · Topic”.
 - **Data:** numbers in tables and visualizations always with tabular figures.
+- **Labels in SVG:** constant screen size like the slide text (names 12–15 px, small labels 10–11.5 px), not scaled with the drawing; `useSvgPx` converts px to viewBox units.
 
 ## Layout
 
 - Content container `container` (1280 px) with `gutter` (24 px); text pages (README, notebook) use `reading-width`.
 - A presentation section (slide) is at least screen height with `section-y` vertical spacing.
 - `lg:grid-cols-2` and `lg:grid-cols-4` grids collapse to one column below `lg`. SVG visualizations have `viewBox` and 100% container width.
-- Target resolutions: 1440×900 (projector) and 390×844 (phone).
+- Target resolutions: 1440×900 (projector), 720×900 (half screen, how the instructor often presents) and 390×844 (phone).
+- Stepping an animation, switching a tab or picking an example never changes the page height. Height is reserved for the longest state at the current width (`StableHeight`, `StableSteps`, `StepControls labels`), never with fixed rem heights.
+- Cards hug their content: reserved space goes outside the card (slide background below a shorter card), never as an empty strip inside it. A state much longer than the others is shown statically next to the animation, not as one of its steps.
 
 ## Elevation & Depth
 
@@ -212,4 +215,5 @@ The linter reports `ink-*`, `cat-*`, `hit`, `miss` etc. as unused by components.
 - Do: interactions via Radix primitives (keyboard accessibility), labeled on the element with the role (e.g. `Slider.Thumb`).
 - Don't: hex in a component, a new UI library, screenshots of code instead of text.
 - Don't: animation that shows no process step; carousels, autoplay, sound.
+- Don't: fixed `h-[…rem]` / `min-h-[…rem]` to stop layout jumps, horizontal scrolling for a list of choices (wrap into rows), a lone item in the last row of chips (split rows evenly).
 - Don't: emoji as decoration of headings and frames.

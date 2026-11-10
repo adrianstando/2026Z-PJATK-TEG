@@ -28,7 +28,7 @@ export function PromptBuildViz() {
 
   return (
     <div ref={st.ref} className="space-y-4">
-      <StepControls stepper={st} label={LABELS[st.step]} />
+      <StepControls stepper={st} label={LABELS[st.step]} labels={LABELS} />
       <Panel className="overflow-hidden">
         <div className="flex items-center gap-4 border-b border-[var(--line)] px-4 py-2.5">
           <span className="font-mono text-xs text-fg-subtle">prompt</span>

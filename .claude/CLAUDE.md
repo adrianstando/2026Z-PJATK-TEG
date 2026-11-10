@@ -34,7 +34,7 @@ Lab materials for Generative Technologies (Technologie Generatywne, PJATK, 2026Z
 cd web && npm run typecheck && npm run build
 ```
 
-Visuals: `npx serve web/out`, changed pages at 1440×900 and 390×844, empty browser console.
+Visuals: `npx serve web/out`, changed pages at 1440×900, 720×900 and 390×844, empty browser console; stepping through every animation must not change the slide height.
 
 ## Commits
 
@@ -42,4 +42,4 @@ Conventional commits in English: `feat(web): …`, `fix(notebook-01): …`, `doc
 
 ## Skills
 
-Project skills in `.claude/skills/` load when relevant: `web-ui` (UI in `web/`) and `notebook-format` (notebooks rendered on the site). After a visual change: Playwright screenshot at 1440×900 and 390×844, and look at it before reporting the change as done.
+Project skills in `.claude/skills/` load when relevant: `web-ui` (UI in `web/`) and `notebook-format` (notebooks rendered on the site). After a visual change: Playwright screenshot at 1440×900, 720×900 and 390×844, and look at it before reporting the change as done.
