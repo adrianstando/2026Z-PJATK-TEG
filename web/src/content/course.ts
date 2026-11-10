@@ -111,10 +111,11 @@ export const LESSONS: Lesson[] = [
     slug: "07-skillathon",
     title: "",
     accent: "Skillathon",
-    topics: ["Use case podany na zajęciach", "Każda osoba pisze skill", "Agent koduje max 15 min", "Demo"],
+    topics: ["Każda osoba pisze skill", "Skille zespołu w pluginie", "Agent buduje aplikację w Next.js", "Prezentacje"],
     activity: "skillathon",
     folder: "07-skillathon",
-    ready: false,
+    ready: true,
+    notebook: false,
   },
   {
     n: 8,

@@ -104,6 +104,9 @@ pages        app/**/page.tsx        only compose organisms + content
 | `viz/internals/GenerationViz` | generation rounds animated on NetworkDiagram, top-5 distribution, greedy append |
 | `viz/internals/MoeViz` | Mixture of Experts: router top-2 of 8 experts per token (illustrative weights) |
 | `viz/internals/GemmaEViz` | Gemma „E”: Per-Layer Embeddings off the accelerator, MatFormer nested widths |
+| `viz/SkillathonTimer` | 90-min skillathon timeline: current phase, countdown, keys S/N/P/R (projector during class) |
+| `viz/SkillAnatomy` | SKILL.md split into parts; selecting one explains it and when it enters the agent context |
+| `viz/EncryptedBrief` | Markdown encrypted in the repo (PBKDF2 + AES-GCM), decrypted in the browser with a password given in class; password not stored (hidden again after reload) |
 | `site/SiteNav`, `site/Breadcrumbs`, `site/Slide`, `site/PresenterKeys`, `site/BackgroundMesh` | page frame, breadcrumbs, keyboard navigation |
 | `lesson/HeroTitle` | opening title with word animation |
 

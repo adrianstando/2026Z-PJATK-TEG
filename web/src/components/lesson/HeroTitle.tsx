@@ -36,9 +36,11 @@ export function HeroTitle({
                 <span key={w + i} className="-mb-[0.18em] inline-block overflow-hidden pb-[0.22em] align-bottom">
                   <motion.span
                     className={`-mb-[0.2em] inline-block pb-[0.2em] pr-[0.22em] ${li === accentLine ? "text-gradient" : ""}`}
-                    initial={reduce ? false : { y: "110%", rotate: 4 }}
+                    // initial taki sam na serwerze i w przeglądarce (useReducedMotion na serwerze zwraca null,
+                    // więc warunkowy initial psuł hydrację); reduced motion = przejście bez czasu trwania.
+                    initial={{ y: "110%", rotate: 4 }}
                     animate={{ y: "0%", rotate: 0 }}
-                    transition={{ duration: 1, delay: 0.15 + i * 0.09, ease: [0.16, 1, 0.3, 1] }}
+                    transition={reduce ? { duration: 0 } : { duration: 1, delay: 0.15 + i * 0.09, ease: [0.16, 1, 0.3, 1] }}
                   >
                     {w}
                   </motion.span>
