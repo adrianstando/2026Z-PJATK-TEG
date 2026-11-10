@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Award, Bot, FolderCog, Images, Mail, Puzzle, Users } from "lucide-react";
+import { Award, BookOpenText, Bot, FolderCog, Images, Mail, Puzzle, Users } from "lucide-react";
 import { SiteNav } from "@/components/site/SiteNav";
 import { Slide } from "@/components/site/Slide";
 import { HeroTitle } from "@/components/lesson/HeroTitle";
@@ -8,6 +8,8 @@ import { CodeBlock } from "@/components/molecules/CodeBlock";
 import { Callout } from "@/components/molecules/Callout";
 import { Reveal } from "@/components/motion/Reveal";
 import { Panel } from "@/components/ui/Panel";
+import { Button } from "@/components/ui/Button";
+import { REPO_URL } from "@/lib/paths";
 import { SkillathonTimer, type Phase } from "@/components/viz/SkillathonTimer";
 import { SkillAnatomy } from "@/components/viz/SkillAnatomy";
 import { EncryptedBrief } from "@/components/viz/EncryptedBrief";
@@ -135,6 +137,13 @@ export default function Lesson07() {
           />
           <Reveal delay={0.2} className="mt-12">
             <SkillAnatomy />
+          </Reveal>
+          <Reveal delay={0.3} className="mt-6">
+            <Button asChild>
+              <a href={`${REPO_URL}/tree/main/07-skillathon#poradnik-pisania-skilli`}>
+                <BookOpenText className="size-4" /> Poradnik pisania skilli
+              </a>
+            </Button>
           </Reveal>
         </Slide>
 
