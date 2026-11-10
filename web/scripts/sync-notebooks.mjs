@@ -17,8 +17,9 @@ const outDir = path.resolve(root, "web/src/content/generated");
 const NOTEBOOKS = {
   "01-llm-embeddingi": ["setup", "first-call", "usage", "tokens", "temperature", "limit", "chat", "agent", "embedding", "similarity", "context", "search"],
   "02-rag": ["setup", "corpus", "chunking", "chunks", "chroma", "filter", "rag", "no-rag", "bm25", "rrf", "rerank", "eval", "chunk-eval", "judge", "judge-control"],
-  "04-graphrag": ["setup", "neo4j", "cypher-create", "cypher-syntax", "data", "schema", "extract", "triples", "quality", "raw-skills", "dedup", "rfp", "load", "queries", "match", "agent-schema", "agent", "agent-run", "readonly", "rag", "structured", "questions", "compare"],
   "03-agenci": ["setup", "tools", "tool-call", "react", "parallel", "context", "chain", "graph", "graph-stream", "create-agent", "memory", "store", "agentic-rag", "web-search"],
+  "04-graphrag": ["setup", "neo4j", "cypher-create", "cypher-syntax", "data", "schema", "extract", "triples", "quality", "raw-skills", "dedup", "rfp", "load", "queries", "match", "agent-schema", "agent", "agent-run", "readonly", "rag", "structured", "questions", "compare"],
+  "05-mcp-multi-agent": ["setup", "server", "jsonrpc", "client", "agent", "http", "inspector", "injection", "least-privilege", "hitl", "single", "supervisor", "parallel", "compare"],
 };
 
 const join = (x) => (Array.isArray(x) ? x.join("") : x ?? "");

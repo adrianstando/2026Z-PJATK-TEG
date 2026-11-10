@@ -8,7 +8,8 @@ import { ACTIVITY_LABEL, type Lesson } from "@/content/course";
 import { cn } from "@/lib/cn";
 
 /**
- * Molekuła: kafelek zajęć. Gotowe zajęcia mają linki do prezentacji i notebooka;
+ * Molekuła: kafelek zajęć. Gotowe zajęcia mają linki do prezentacji, notebooka i zadania, a inna aktywność
+ * (np. test) jest etykietą bez linku;
  * zajęcia z `instructions` (np. prezentacje projektów) mają link „Instrukcje”.
  * Poświata w rogu to gradient, nie rozmyte koło: Safari nie przycina warstw z filter: blur
  * do zaokrąglonych rogów (overflow-hidden + transform), więc z rogu wystawał kwadrat.
@@ -50,11 +51,9 @@ export function LessonCard({ lesson, index }: { lesson: Lesson; index: number })
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <CardLink href={`/zajecia/${lesson.slug}/`} icon={<Presentation className="size-3.5" />} label="Prezentacja" />
           {lesson.notebook && <CardLink href={`/notebook/${lesson.slug}/`} icon={<BookOpenText className="size-3.5" />} label="Notebook" />}
-          {lesson.task ? (
-            <CardLink href={`/notebook/${lesson.slug}-zadanie/`} icon={<SquarePen className="size-3.5" />} label="Zadanie" tone="focus" />
-          ) : (
-            lesson.activity && <Badge tone="focus">{ACTIVITY_LABEL[lesson.activity]}</Badge>
-          )}
+          {lesson.task && <CardLink href={`/notebook/${lesson.slug}-zadanie/`} icon={<SquarePen className="size-3.5" />} label="Zadanie" tone="focus" />}
+          {/* inna aktywność niż zadanie (np. test) to etykieta bez linku: odbywa się poza stroną */}
+          {lesson.activity && !(lesson.task && lesson.activity === "zadanie") && <Badge tone="focus">{ACTIVITY_LABEL[lesson.activity]}</Badge>}
         </div>
       ) : lesson.instructions ? (
         <div className="mt-5 flex flex-wrap items-center gap-2">

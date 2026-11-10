@@ -17,6 +17,8 @@ langchain-openai>=1.0
 langgraph>=1.0
 ddgs
 pydantic>=2
+mcp>=1.24,<2
+langchain-mcp-adapters
 neo4j>=6.0
 fastapi
 httpx

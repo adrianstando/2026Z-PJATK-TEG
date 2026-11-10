@@ -68,7 +68,7 @@ pages        app/**/page.tsx        only compose organisms + content
 | `viz/RerankViz` | 10 hybrid candidates reordered by a cross-encoder, with rank deltas |
 | `viz/EvalMetricsViz` | hit@1 and MRR accumulated question by question for 4 methods |
 | `viz/JudgeViz` | LLM judge verdicts F/C incl. control cases |
-| `viz/ReplayFlow` | shared skeleton: replays a saved agent run step by step (token moves between diagram nodes, event log on the right, step / restart buttons) |
+| `viz/ReplayFlow` | shared skeleton: replays a saved agent run step by step (token moves between diagram nodes, event log on the right, Play/step controls); parallel nodes via `FlowEvent.also`, dashed conditional edges, optional per-node width `w` |
 | `viz/AgentLoopViz` | ReAct loop question → thinking → action → observation → back to thinking → answer, replayed from the `web:react` output (or any `parseReact` events via `events`) |
 | `viz/ChainViz` | LangChain chain as a fixed row of steps, no branches or loop |
 | `viz/GraphRunViz` | LangGraph `__start__` → model ⇄ tools → `__end__`, state message count, replayed from `graph.stream` |
@@ -88,6 +88,11 @@ pages        app/**/page.tsx        only compose organisms + content
 | `viz/MatchQueryViz` | long RFP matching query clause by clause with intermediate rows (collect, list comprehension, met/available, filter, result) |
 | `viz/RagCompareViz` | same question in RAG, structured RAG (metadata filter + vectors) and agentic GraphRAG: what each system saw and its answer, fixed-height columns |
 | `viz/DedupViz` | raw entity names merging into canonical nodes (layoutId) |
+| `viz/McpIntroViz` | `McpWhyViz` (M×N integrations → M+N with MCP, stepwise) and `McpArchitectureViz` (host, clients, local/remote servers, static) |
+| `viz/McpMessagesViz` | JSON-RPC sequence (initialize → tools/list → tools/call) replayed from the notebook log, step explanation + formatted JSON |
+| `viz/ActorSequence`, `ModeSequence` | participants as columns, steps as arrows; `ModeSequence` keeps all variants in one grid cell (same card size), optional external `value`; used by `McpFlows` (primitives, transport, security) |
+| `viz/ArchitecturesViz` | supervisor, handoff, orchestrator–workers, writer–critic as LangGraph graphs (`ReplayFlow`, dashed conditional edges), replayed from saved runs |
+| `viz/CostCompareViz` | static boxplots per architecture (calls, tokens, time), dots = runs coloured by correctness |
 | `viz/internals/NetworkDiagram` | molecule: decoder schema text → tokens → embedding → N blocks → output; `links`, `lit` (animation), `moe` variant |
 | `viz/internals/BpeViz` | BPE trained on a paragraph (tokens grow, vocab with IDs), then encoding a new text token by token; GPT-2 tokens of the prompt |
 | `viz/internals/RopeViz` | RoPE on a prompt token's embedding: 4 pairs, angle = position · θ, cos/sin table |
