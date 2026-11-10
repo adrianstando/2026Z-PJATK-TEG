@@ -1,0 +1,341 @@
+{
+ "task": "Dodaj możliwość przedłużenia wypożyczenia: POST /loans/{id}/extend przedłuża termin zwrotu (due_date) o 14 dni, najwyżej 2 razy dla jednego wypożyczenia; odpowiedź zawiera wypożyczenie z liczbą wykonanych przedłużeń w polu extensions. Nie można przedłużyć wypożyczenia, które zostało już zwrócone, ani wtedy, gdy na tę książkę czeka aktywna rezerwacja albo czytelnik ma nieopłacone kary. Dopisz testy i uruchom je.",
+ "runs": {
+  "langchain": {
+   "bez": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 401,
+      "result": "README.md\napp/__init__.py\napp/clock.py\napp/config.py\napp/db.py\napp/errors.py\napp/main.py\napp/money.py\napp/repositories/__init__.py\napp/repositories/book_repo.py\napp/repositories/fine_repo.py\napp/repositories/loan_repo.py\napp/repositories/member_repo.py\napp/repositories/report_repo.py\napp/repositorie"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/routers/loans.py",
+      "context": 764,
+      "result": "import sqlite3\n\nfrom fastapi import APIRouter, Depends\n\nfrom app.db import get_conn\nfrom app.schemas.loans import LoanCreate, LoanOut, ReturnOut\nfrom app.services import loan_service\n\nrouter = APIRouter()\n\n\n@router.post(\"\", response_model=LoanOut, status_code=201)\ndef borrow(payload: LoanCreate, con"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/services/loan_service.py",
+      "context": 764,
+      "result": "import sqlite3\n\nfrom app import clock, config, db\nfrom app.errors import DomainError, NotFoundError\nfrom app.repositories import fine_repo, loan_repo, reservation_repo\nfrom app.services import book_service, fine_service, member_service\n\n\ndef get_loan(conn: sqlite3.Connection, loan_id: int) -> dict:\n"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/repositories/loan_repo.py",
+      "context": 764,
+      "result": "import sqlite3\n\nfrom app.repositories import row_to_dict, rows_to_dicts\n\n_COLUMNS = \"id, book_id, member_id, loaned_on, due_date, returned_on\"\n\n\ndef insert(conn: sqlite3.Connection, book_id: int, member_id: int, loaned_on: str, due_date: str) -> int:\n    cur = conn.execute(\n        \"INSERT INTO loan"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/schemas/loans.py",
+      "context": 764,
+      "result": "from pydantic import BaseModel\n\nfrom app.schemas.common import Grosze, IsoDate, PositiveId\n\n\nclass LoanCreate(BaseModel):\n    book_id: PositiveId\n    member_id: PositiveId\n\n\nclass LoanOut(BaseModel):\n    id: int\n    book_id: int\n    member_id: int\n    loaned_on: IsoDate\n    due_date: IsoDate\n    ret"
+     },
+     {
+      "tool": "read_file",
+      "arg": "tests/test_loans.py",
+      "context": 764,
+      "result": "from conftest import error_code\n\n\ndef test_borrow_sets_due_date(client, make_book, make_member, make_loan):\n    loan = make_loan(make_book()[\"id\"], make_member()[\"id\"])\n    assert loan[\"loaned_on\"] == \"2026-03-02\"\n    assert loan[\"due_date\"] == \"2026-04-01\"\n    assert loan[\"returned_on\"] is None\n\n\nd"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/errors.py",
+      "context": 764,
+      "result": "\"\"\"Błędy domenowe i ich mapowanie na odpowiedzi HTTP.\n\nSerwisy zgłaszają wyłącznie wyjątki z tego modułu. Routery ich nie łapią –\nrobi to handler zarejestrowany w `install_error_handlers`. Każda odpowiedź\nz błędem ma ten sam kształt:\n\n    {\"error\": {\"code\": \"loan_already_returned\", \"message\": \"...\"}"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/repositories/reservation_repo.py",
+      "context": 764,
+      "result": "import sqlite3\n\nfrom app.repositories import row_to_dict, rows_to_dicts\n\n_COLUMNS = \"id, book_id, member_id, created_on, status\"\n\n\ndef insert(conn: sqlite3.Connection, book_id: int, member_id: int, created_on: str) -> int:\n    cur = conn.execute(\n        \"INSERT INTO reservations (book_id, member_id"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/repositories/fine_repo.py",
+      "context": 764,
+      "result": "import sqlite3\n\nfrom app.repositories import row_to_dict, rows_to_dicts\n\n_COLUMNS = \"id, member_id, loan_id, amount_grosze, reason, issued_on, status, settled_on\"\n\n\ndef insert(\n    conn: sqlite3.Connection,\n    member_id: int,\n    amount_grosze: int,\n    reason: str,\n    issued_on: str,\n    loan_id:"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/schemas/common.py",
+      "context": 5813,
+      "result": "\"\"\"Typy wspólne dla schematów.\"\"\"\n\nfrom typing import Annotated\n\nfrom pydantic import Field\n\n# Data jako tekst ISO, np. \"2026-03-02\".\nIsoDate = Annotated[str, Field(pattern=r\"^\\d{4}-\\d{2}-\\d{2}$\", examples=[\"2026-03-02\"])]\n\n# Kwota w groszach. 1250 = 12,50 zł.\nGrosze = Annotated[int, Field(ge=0, exa"
+     },
+     {
+      "tool": "read_file",
+      "arg": "migrations/001_init.sql",
+      "context": 5813,
+      "result": "-- Schemat początkowy: książki, czytelnicy, wypożyczenia.\n-- Daty jako TEXT w formacie ISO YYYY-MM-DD.\n\nCREATE TABLE books (\n    id      INTEGER PRIMARY KEY AUTOINCREMENT,\n    isbn    TEXT NOT NULL UNIQUE,\n    title   TEXT NOT NULL,\n    author  TEXT NOT NULL,\n    copies  INTEGER NOT NULL CHECK (copi"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/db.py",
+      "context": 5813,
+      "result": "\"\"\"Połączenie z SQLite i migracje schematu.\n\nSchemat bazy powstaje wyłącznie z plików `migrations/NNN_opis.sql`, wykonywanych\nw kolejności numerów. Zastosowane migracje są zapisywane w tabeli\n`schema_migrations` razem z sumą kontrolną – zmiana pliku, który już był\nzastosowany na produkcji, kończy si"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/main.py",
+      "context": 5813,
+      "result": "\"\"\"Fabryka aplikacji.\n\nUruchomienie lokalne:  uvicorn app.main:create_app --factory --reload\n\"\"\"\n\nfrom pathlib import Path\n\nfrom fastapi import FastAPI\n\nfrom app import config, db\nfrom app.errors import install_error_handlers\nfrom app.routers import books, fines, loans, members, reports, reservation"
+     },
+     {
+      "tool": "read_file",
+      "arg": "tests/conftest.py",
+      "context": 7634,
+      "result": "\"\"\"Wspólne fixture'y. Każdy test dostaje świeżą bazę w tmp_path.\n\n„Dziś” w testach to zawsze 2026-03-02 (poniedziałek). Do przesuwania czasu\nsłuży fixture `travel`.\n\"\"\"\n\nfrom datetime import date, timedelta\nfrom itertools import count\n\nimport pytest\nfrom fastapi.testclient import TestClient\n\nfrom ap"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/clock.py",
+      "context": 8222,
+      "result": "\"\"\"Jedyne źródło „dzisiejszej daty” w aplikacji.\n\nDaty przechowujemy i zwracamy jako tekst ISO `YYYY-MM-DD`.\nNie wywołuj `date.today()` ani `datetime.now()` poza tym modułem:\ntesty ustawiają datę przez `set_today()`.\n\"\"\"\n\nfrom datetime import date, timedelta\n\n_override: date | None = None\n\n\ndef toda"
+     },
+     {
+      "tool": "write_file",
+      "arg": "migrations/005_loan_extensions.sql",
+      "context": 8596,
+      "result": "zapisano 3 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/schemas/loans.py",
+      "context": 8670,
+      "result": "zapisano 32 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/repositories/loan_repo.py",
+      "context": 8907,
+      "result": "zapisano 51 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/services/loan_service.py",
+      "context": 9512,
+      "result": "zapisano 83 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/routers/loans.py",
+      "context": 10672,
+      "result": "zapisano 29 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "tests/test_loans.py",
+      "context": 10978,
+      "result": "zapisano 144 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q tests/test_loans.py",
+      "context": 12981,
+      "result": "exit 0\n.................                                                        [100%]\n17 passed in 2.29s\n"
+     }
+    ],
+    "calls": 13,
+    "inputTokens": 106184,
+    "outputTokens": 4841,
+    "final": "Gotowe.\n\nZrobione zmiany:\n- dodałem endpoint `POST /loans/{id}/extend`\n- przedłużenie wydłuża `due_date` o 14 dni\n- limit: maksymalnie 2 przedłużenia na jedno wypożyczenie\n- odpowiedź zwraca wypożyczenie z polem `extensions`\n- blokady:\n  - nie da się przedłużyć zwróconego wypożyczenia\n  - nie da się przedłużyć, jeśli istnieje aktywna rezerwacja na tę książkę\n  - nie da się przedłużyć, jeśli czytelnik ma nieopłacone kary\n- dodałem migrację `migrations/005_loan_extensions.sql`\n- dopisałem testy dla nowych przypadków\n\nUruchomione testy:\n- `pytest -q tests/test_loans.py`\n\nWynik:\n- `17 passed`\n\nJeś",
+    "seconds": 36,
+    "acceptance": {
+     "exit": 0,
+     "passed": 10,
+     "failed": 0,
+     "summary": "10 passed in 1.47s"
+    },
+    "tests": {
+     "exit": 0,
+     "passed": 44,
+     "failed": 0,
+     "summary": "44 passed in 5.18s"
+    }
+   },
+   "z": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "load_skill",
+      "arg": "new-endpoint",
+      "context": 1289,
+      "result": "---\nname: new-endpoint\ndescription: Checklista dodawania lub zmiany endpointu HTTP w API wypożyczalni (router, serwis, repozytorium, schemat, migracja, testy). Używaj, gdy zadanie dodaje nową ścieżkę albo nowe pole/regułę w istniejącym zasobie.\n---\n\n# Nowy endpoint w API wypożyczalni\n\nKolejność prac"
+     },
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 2189,
+      "result": ".claude/skills/new-endpoint/SKILL.md\nAGENTS.md\nCLAUDE.md\nREADME.md\napp/__init__.py\napp/clock.py\napp/config.py\napp/db.py\napp/errors.py\napp/main.py\napp/money.py\napp/repositories/__init__.py\napp/repositories/book_repo.py\napp/repositories/fine_repo.py\napp/repositories/loan_repo.py\napp/repositories/membe"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/main.py",
+      "context": 2189,
+      "result": "\"\"\"Fabryka aplikacji.\n\nUruchomienie lokalne:  uvicorn app.main:create_app --factory --reload\n\"\"\"\n\nfrom pathlib import Path\n\nfrom fastapi import FastAPI\n\nfrom app import config, db\nfrom app.errors import install_error_handlers\nfrom app.routers import books, fines, loans, members, reports, reservation"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/services/loan_service.py",
+      "context": 2189,
+      "result": "import sqlite3\n\nfrom app import clock, config, db\nfrom app.errors import DomainError, NotFoundError\nfrom app.repositories import fine_repo, loan_repo, reservation_repo\nfrom app.services import book_service, fine_service, member_service\n\n\ndef get_loan(conn: sqlite3.Connection, loan_id: int) -> dict:\n"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/repositories/loan_repo.py",
+      "context": 2189,
+      "result": "import sqlite3\n\nfrom app.repositories import row_to_dict, rows_to_dicts\n\n_COLUMNS = \"id, book_id, member_id, loaned_on, due_date, returned_on\"\n\n\ndef insert(conn: sqlite3.Connection, book_id: int, member_id: int, loaned_on: str, due_date: str) -> int:\n    cur = conn.execute(\n        \"INSERT INTO loan"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/schemas/loan.py",
+      "context": 2189,
+      "result": "BŁĄD: [Errno 2] No such file or directory: '/tmp/lesson06-exp/loop/langchain-z/app/schemas/loan.py'"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/routers/loans.py",
+      "context": 2189,
+      "result": "import sqlite3\n\nfrom fastapi import APIRouter, Depends\n\nfrom app.db import get_conn\nfrom app.schemas.loans import LoanCreate, LoanOut, ReturnOut\nfrom app.services import loan_service\n\nrouter = APIRouter()\n\n\n@router.post(\"\", response_model=LoanOut, status_code=201)\ndef borrow(payload: LoanCreate, con"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/config.py",
+      "context": 2189,
+      "result": "\"\"\"Ustawienia domenowe wypożyczalni.\n\nWszystkie kwoty są w groszach (int), wszystkie okresy w dniach.\nNie wpisuj tych liczb na sztywno w serwisach – importuj je stąd.\n\"\"\"\n\nimport os\n\n# Wypożyczenia\nLOAN_PERIOD_DAYS = 30\nMAX_ACTIVE_LOANS = 5\n\n# Kary za przetrzymanie\nFINE_PER_DAY_GROSZE = 50\nMAX_FINE_"
+     },
+     {
+      "tool": "read_file",
+      "arg": "docs/api.md",
+      "context": 2189,
+      "result": "# API – skrót\n\n| Metoda | Ścieżka | Opis |\n|---|---|---|\n| GET/POST | `/books` | katalog, dodanie książki (`?q=` szuka w tytule i autorze) |\n| GET/PATCH | `/books/{id}` | szczegóły, zmiana tytułu/autora/liczby egzemplarzy |\n| GET | `/books/{id}/queue` | kolejka rezerwacji |\n| GET/POST | `/members` |"
+     },
+     {
+      "tool": "read_file",
+      "arg": "tests/test_loans.py",
+      "context": 2189,
+      "result": "from conftest import error_code\n\n\ndef test_borrow_sets_due_date(client, make_book, make_member, make_loan):\n    loan = make_loan(make_book()[\"id\"], make_member()[\"id\"])\n    assert loan[\"loaned_on\"] == \"2026-03-02\"\n    assert loan[\"due_date\"] == \"2026-04-01\"\n    assert loan[\"returned_on\"] is None\n\n\nd"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/schemas/loans.py",
+      "context": 6703,
+      "result": "from pydantic import BaseModel\n\nfrom app.schemas.common import Grosze, IsoDate, PositiveId\n\n\nclass LoanCreate(BaseModel):\n    book_id: PositiveId\n    member_id: PositiveId\n\n\nclass LoanOut(BaseModel):\n    id: int\n    book_id: int\n    member_id: int\n    loaned_on: IsoDate\n    due_date: IsoDate\n    ret"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/repositories/reservation_repo.py",
+      "context": 6703,
+      "result": "import sqlite3\n\nfrom app.repositories import row_to_dict, rows_to_dicts\n\n_COLUMNS = \"id, book_id, member_id, created_on, status\"\n\n\ndef insert(conn: sqlite3.Connection, book_id: int, member_id: int, created_on: str) -> int:\n    cur = conn.execute(\n        \"INSERT INTO reservations (book_id, member_id"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app/repositories/fine_repo.py",
+      "context": 6703,
+      "result": "import sqlite3\n\nfrom app.repositories import row_to_dict, rows_to_dicts\n\n_COLUMNS = \"id, member_id, loan_id, amount_grosze, reason, issued_on, status, settled_on\"\n\n\ndef insert(\n    conn: sqlite3.Connection,\n    member_id: int,\n    amount_grosze: int,\n    reason: str,\n    issued_on: str,\n    loan_id:"
+     },
+     {
+      "tool": "read_file",
+      "arg": "migrations/002_reservations.sql",
+      "context": 6703,
+      "result": "-- Rezerwacje książek, których wszystkie egzemplarze są wypożyczone.\n-- status: active -> fulfilled (czytelnik wypożyczył) albo cancelled.\n\nCREATE TABLE reservations (\n    id          INTEGER PRIMARY KEY AUTOINCREMENT,\n    book_id     INTEGER NOT NULL REFERENCES books(id),\n    member_id   INTEGER NO"
+     },
+     {
+      "tool": "read_file",
+      "arg": "migrations/003_fines.sql",
+      "context": 6703,
+      "result": "-- Kary. Kwoty w groszach (INTEGER), nigdy REAL.\n-- loan_id jest NULL dla kar nałożonych ręcznie (np. zniszczona książka).\n\nCREATE TABLE fines (\n    id             INTEGER PRIMARY KEY AUTOINCREMENT,\n    member_id      INTEGER NOT NULL REFERENCES members(id),\n    loan_id        INTEGER REFERENCES loa"
+     },
+     {
+      "tool": "read_file",
+      "arg": "tests/conftest.py",
+      "context": 6703,
+      "result": "\"\"\"Wspólne fixture'y. Każdy test dostaje świeżą bazę w tmp_path.\n\n„Dziś” w testach to zawsze 2026-03-02 (poniedziałek). Do przesuwania czasu\nsłuży fixture `travel`.\n\"\"\"\n\nfrom datetime import date, timedelta\nfrom itertools import count\n\nimport pytest\nfrom fastapi.testclient import TestClient\n\nfrom ap"
+     },
+     {
+      "tool": "write_file",
+      "arg": "migrations/005_loan_extensions.sql",
+      "context": 9114,
+      "result": "zapisano 4 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/repositories/loan_repo.py",
+      "context": 9217,
+      "result": "zapisano 49 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/schemas/loans.py",
+      "context": 9816,
+      "result": "zapisano 36 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/config.py",
+      "context": 10060,
+      "result": "zapisano 23 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/services/loan_service.py",
+      "context": 10299,
+      "result": "zapisano 79 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/routers/loans.py",
+      "context": 11450,
+      "result": "zapisano 29 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app/main.py",
+      "context": 11764,
+      "result": "zapisano 42 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "docs/api.md",
+      "context": 12174,
+      "result": "zapisano 22 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "tests/test_loans.py",
+      "context": 12644,
+      "result": "zapisano 145 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "python -m pytest tests -q",
+      "context": 14677,
+      "result": "exit 0\n............................................                             [100%]\n44 passed in 31.04s\n"
+     }
+    ],
+    "calls": 14,
+    "inputTokens": 136125,
+    "outputTokens": 5950,
+    "final": "Gotowe.\n\nCo dodałem:\n- endpoint `POST /loans/{id}/extend`\n- przedłużanie `due_date` o 14 dni\n- limit 2 przedłużeń na jedno wypożyczenie\n- pole `extensions` w odpowiedzi wypożyczenia\n- blokady:\n  - wypożyczenie już zwrócone\n  - aktywna rezerwacja na tę książkę\n  - nieopłacone kary czytelnika\n- migrację dodającą kolumnę `extensions`\n- testy dla sukcesu, 404 i wszystkich reguł 409\n- wpis w `docs/api.md`\n\nWeryfikacja:\n- `python -m pytest tests -q` ✅\n- wynik: `44 passed`\n\nJeśli chcesz, mogę też dopisać krótki opis nowego błędu w dokumentacji domenowej.",
+    "seconds": 200,
+    "acceptance": {
+     "exit": 1,
+     "passed": 8,
+     "failed": 2,
+     "summary": "2 failed, 8 passed in 2.28s"
+    },
+    "tests": {
+     "exit": 0,
+     "passed": 44,
+     "failed": 0,
+     "summary": "44 passed in 48.03s"
+    }
+   }
+  }
+ }
+}

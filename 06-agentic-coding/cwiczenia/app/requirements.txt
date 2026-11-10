@@ -1,0 +1,5 @@
+fastapi>=0.115
+uvicorn
+pyjwt>=2.8
+httpx
+pytest

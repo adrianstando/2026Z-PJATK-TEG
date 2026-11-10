@@ -1,0 +1,12 @@
+{
+  "name": "teg-plugins",
+  "description": "Pluginy z zajęć 6 kursu TEG",
+  "owner": { "name": "TEG 2026Z" },
+  "plugins": [
+    {
+      "name": "secure-api-kit",
+      "source": "./secure-api-kit",
+      "description": "Skille secure-api i api-tests, subagent security-reviewer i hook uruchamiający testy po edycji"
+    }
+  ]
+}

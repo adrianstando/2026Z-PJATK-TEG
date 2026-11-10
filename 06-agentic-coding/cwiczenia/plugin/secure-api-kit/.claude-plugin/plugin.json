@@ -1,0 +1,6 @@
+{
+  "name": "secure-api-kit",
+  "version": "0.1.0",
+  "description": "Reguły bezpieczeństwa i testów dla API w FastAPI: skille, subagent do przeglądu i hook uruchamiający testy po edycji",
+  "author": { "name": "TEG 2026Z" }
+}

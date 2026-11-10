@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": ["Bash(pytest *)", "Bash(python -m pytest *)"],
+    "deny": ["Read(./.env)", "Read(./.env.*)", "Edit(./.env)", "Edit(./.env.*)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-tests.sh" }]
+      }
+    ]
+  }
+}

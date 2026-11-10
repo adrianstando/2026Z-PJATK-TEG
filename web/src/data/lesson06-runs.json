@@ -1,0 +1,497 @@
+{
+ "task": "Dodaj endpoint GET /me/submissions, który zwraca zgłoszenia zalogowanego użytkownika, oraz POST /change-password. Uruchom testy.",
+ "runs": [
+  {
+   "name": "bez-md",
+   "withMd": false,
+   "model": "gpt-5.4-mini",
+   "task": "Dodaj endpoint GET /me/submissions, który zwraca zgłoszenia zalogowanego użytkownika, oraz POST /change-password. Uruchom testy.",
+   "context": [],
+   "steps": [
+    {
+     "tool": "list_files",
+     "args": {},
+     "result": "app.py\natak.py\nrequirements.txt"
+    },
+    {
+     "tool": "read_file",
+     "args": {
+      "path": "app.py"
+     },
+     "result": "\"\"\"Zadania: mini API do rozwiązywania zadań z punktacją i rankingiem.\n\nWygenerowane jednym promptem: \"zrób mi API w FastAPI, gdzie użytkownicy się logują,\nrozwiązują zadania, dostają punkty i jest ranking\". Działa. Czy jest poprawne?\n\"\"\"\n\nimport hashlib\nimport sqlite3\nimport time\n\nimport jwt\nfrom fastapi import FastAPI, Header, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom pydantic import BaseModel\n\nSECRET_KEY = \"super-secret-key-123\"\nADMIN_PASSWORD = \"admin123\"\nDB = \"app.db\"\n\napp = FastAPI(title=\"Zadania\", debug=True)\napp.add_middleware(CORSMiddleware, allow_origins=[\""
+    },
+    {
+     "tool": "read_file",
+     "args": {
+      "path": "requirements.txt"
+     },
+     "result": "fastapi>=0.115\nuvicorn\npyjwt>=2.8\nhttpx\npytest\n"
+    },
+    {
+     "tool": "write_file",
+     "args": {
+      "path": "app.py",
+      "content": "<160 linii>"
+     },
+     "result": "zapisano 160 linii"
+    },
+    {
+     "tool": "write_file",
+     "args": {
+      "path": "test_app.py",
+      "content": "<50 linii>"
+     },
+     "result": "zapisano 50 linii"
+    },
+    {
+     "tool": "run",
+     "args": {
+      "command": "pytest -q"
+     },
+     "result": "exit 0\n..                                                                       [100%]\n=============================== warnings summary ===============================\ntest_app.py::test_me_submissions_returns_logged_user_submissions\ntest_app.py::test_change_password_allows_login_with_new_password\n  …/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 20 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.\n    return self._jws.encode(\n\ntest_app.py::test_me_submissions_returns_logged_"
+    },
+    {
+     "tool": "message",
+     "args": {},
+     "result": "Gotowe.\n\nCo dodałem:\n- `GET /me/submissions` — zwraca zgłoszenia zalogowanego użytkownika\n- `POST /change-password` — zmienia hasło po podaniu aktualnego i nowego\n\nDodatkowo:\n- dodałem testy dla obu endpointów\n- uruchomiłem testy: `2 passed`\n\nJeśli chcesz, mogę też od razu poprawić bezpieczeństwo logowania i obecne użycie `Header()`/SQL injection w tym API."
+    }
+   ],
+   "promptTokens": [
+    317,
+    349,
+    1527,
+    1578,
+    3243,
+    3797,
+    4077
+   ],
+   "final": "Gotowe.\n\nCo dodałem:\n- `GET /me/submissions` — zwraca zgłoszenia zalogowanego użytkownika\n- `POST /change-password` — zmienia hasło po podaniu aktualnego i nowego\n\nDodatkowo:\n- dodałem testy dla obu endpointów\n- uruchomiłem testy: `2 passed`\n\nJeśli chcesz, mogę też od razu poprawić bezpieczeństwo logowania i obecne użycie `Header()`/SQL injection w tym API.",
+   "diff": [
+    "--- app.py (przed)",
+    "+++ app.py (po)",
+    "@@ -62,2 +62,7 @@",
+    " ",
+    "+class ChangePassword(BaseModel):",
+    "+    current_password: str",
+    "+    new_password: str",
+    "+",
+    "+",
+    " def current_user(authorization: str):",
+    "@@ -121,2 +126,21 @@",
+    " ",
+    "+@app.get(\"/me/submissions\")",
+    "+def my_submissions(authorization: str = Header()):",
+    "+    user = current_user(authorization)",
+    "+    conn = db()",
+    "+    return [dict(r) for r in conn.execute(\"SELECT * FROM submissions WHERE user_id = ? ORDER BY id DESC\", (user[\"id\"],))]",
+    "+",
+    "+",
+    "+@app.post(\"/change-password\")",
+    "+def change_password(payload: ChangePassword, authorization: str = Header()):",
+    "+    user = current_user(authorization)",
+    "+    conn = db()",
+    "+    row = conn.execute(\"SELECT password FROM users WHERE id = ?\", (user[\"id\"],)).fetchone()",
+    "+    if not row or row[\"password\"] != hashlib.md5(payload.current_password.encode()).hexdigest():",
+    "+        raise HTTPException(400, \"Nieprawidłowe hasło\")",
+    "+    conn.execute(\"UPDATE users SET password = ? WHERE id = ?\", (hashlib.md5(payload.new_password.encode()).hexdigest(), user[\"id\"]))",
+    "+    conn.commit()",
+    "+    return {\"ok\": True}",
+    "+",
+    "+",
+    " @app.get(\"/ranking\")"
+   ],
+   "files": [
+    "app.py",
+    "atak.py",
+    "requirements.txt",
+    "test_app.py"
+   ],
+   "pytest": "2 passed, 4 warnings in 0.48s",
+   "pytestOk": true,
+   "attack": "[LUKA] wyciek-odpowiedzi: GET /tasks bez logowania -> {'id': 1, 'question': 'Ile to 2 + 2?', 'answer': '4', 'points': 1}\n[LUKA] sql-injection: login jako \"admin' --\" -> HTTP 200, admin=True\n[LUKA] zaufanie-do-klienta: odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 1000\n[LUKA] race-condition: 10 równoległych poprawnych odpowiedzi, HTTP 200: 10; punkty za zadanie warte 3: 30\n[LUKA] idor: ola czyta zgłoszenie 1 (ali) -> HTTP 200 '5'\n[LUKA] wyciek-hasel: ranking zwraca pola ['id', 'is_admin', 'password', 'points', 'username']; hasz admina to md5('admin123'): True\n[LUKA] sekret-w-kodzie: token admina podpisany kluczem z repo -> DELETE /users/4: HTTP 200\n[LUKA] brak-walidacji: task_id=999, odpowiedź 1 MB -> HTTP 200\n[LUKA] blad-500-zamiast-401: zły token -> HTTP 500\n[ok  ] brak-testow: pliki test_*.py: 1",
+   "luki": 9,
+   "tests": 1,
+   "harness": "harness.py"
+  },
+  {
+   "name": "z-md",
+   "withMd": true,
+   "model": "gpt-5.4-mini",
+   "task": "Dodaj endpoint GET /me/submissions, który zwraca zgłoszenia zalogowanego użytkownika, oraz POST /change-password. Uruchom testy.",
+   "context": [
+    {
+     "type": "context",
+     "source": "AGENTS.md",
+     "chars": 688
+    },
+    {
+     "type": "context",
+     "source": "skill-descriptions",
+     "names": [
+      "api-tests",
+      "secure-api"
+     ]
+    }
+   ],
+   "steps": [
+    {
+     "tool": "list_files",
+     "args": {},
+     "result": ".claude/agents/security-reviewer.md\n.claude/settings.json\n.claude/skills/api-tests/SKILL.md\n.claude/skills/secure-api/SKILL.md\nAGENTS.md\napp.py\natak.py\nrequirements.txt"
+    },
+    {
+     "tool": "load_skill",
+     "args": {
+      "name": "api-tests"
+     },
+     "result": "---\nname: api-tests\ndescription: Jak pisać testy API w tym projekcie (pytest + TestClient, osobna baza na test). Używać przy dodawaniu lub zmianie endpointu i przy naprawie błędu.\n---\n\n# api-tests\n\n- `pytest` + `fastapi.testclient.TestClient`; każdy test na świeżej bazie w `tmp_path` (fixture zmienia `app.DB` przed `init_db()`).\n- Na każdy endpoint co najmniej: przypadek poprawny, brak tokenu (401), cudzy zasób (404), złe dane (422).\n- Błąd znaleziony ręcznie = najpierw test, który go odtwarza i nie przechodzi, potem poprawka.\n- Race condition testuje się realnie: `ThreadPoolExecutor(10)` i ta"
+    },
+    {
+     "tool": "load_skill",
+     "args": {
+      "name": "secure-api"
+     },
+     "result": "---\nname: secure-api\ndescription: Reguły bezpieczeństwa dla endpointów FastAPI w tym projekcie (logowanie, punkty, dostęp do danych). Używać przy każdej zmianie lub dodaniu endpointu.\n---\n\n# secure-api\n\nReguły, których agent sam z siebie nie przyjmie. Każda ma powód.\n\n## Dane wejściowe\n\n- Każde pole wejściowe ma typ i granice w modelu Pydantic (`Field(min_length=…, max_length=…)`, `ge`, `le`). Odpowiedź: max 1000 znaków, hasło 8–128.\n- Identyfikatory z URL i ciała (np. `task_id`) sprawdza się w bazie; brak = 404, nie 200.\n\n## Zaufanie\n\n- **Klient nie decyduje o wyniku.** Poprawność odpowiedzi "
+    },
+    {
+     "tool": "read_file",
+     "args": {
+      "path": "app.py"
+     },
+     "result": "\"\"\"Zadania: mini API do rozwiązywania zadań z punktacją i rankingiem.\n\nWygenerowane jednym promptem: \"zrób mi API w FastAPI, gdzie użytkownicy się logują,\nrozwiązują zadania, dostają punkty i jest ranking\". Działa. Czy jest poprawne?\n\"\"\"\n\nimport hashlib\nimport sqlite3\nimport time\n\nimport jwt\nfrom fastapi import FastAPI, Header, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom pydantic import BaseModel\n\nSECRET_KEY = \"super-secret-key-123\"\nADMIN_PASSWORD = \"admin123\"\nDB = \"app.db\"\n\napp = FastAPI(title=\"Zadania\", debug=True)\napp.add_middleware(CORSMiddleware, allow_origins=[\""
+    },
+    {
+     "tool": "read_file",
+     "args": {
+      "path": "test_app.py"
+     },
+     "result": "BŁĄD: brak pliku"
+    },
+    {
+     "tool": "list_files",
+     "args": {},
+     "result": ".claude/agents/security-reviewer.md\n.claude/settings.json\n.claude/skills/api-tests/SKILL.md\n.claude/skills/secure-api/SKILL.md\nAGENTS.md\napp.py\natak.py\nrequirements.txt"
+    },
+    {
+     "tool": "write_file",
+     "args": {
+      "path": "test_app.py",
+      "content": "<57 linii>"
+     },
+     "result": "zapisano 57 linii"
+    },
+    {
+     "tool": "write_file",
+     "args": {
+      "path": "app.py",
+      "content": "<163 linii>"
+     },
+     "result": "zapisano 163 linii"
+    },
+    {
+     "tool": "run",
+     "args": {
+      "command": "pytest -q"
+     },
+     "result": "exit 1\n...F                                                                     [100%]\n=================================== FAILURES ===================================\n_______________ test_change_password_rejects_wrong_old_password ________________\n\nclient = <starlette.testclient.TestClient object at 0x73e5db9a8df0>\n\n    def test_change_password_rejects_wrong_old_password(client):\n        token = register_and_login(client)\n        headers = {\"Authorization\": f\"Bearer {token}\"}\n    \n        response = client.post(\"/change-password\", json={\"old_password\": \"wrong\", \"new_password\": \"newsecret123\"}"
+    },
+    {
+     "tool": "write_file",
+     "args": {
+      "path": "test_app.py",
+      "content": "<55 linii>"
+     },
+     "result": "zapisano 55 linii"
+    },
+    {
+     "tool": "run",
+     "args": {
+      "command": "pytest -q"
+     },
+     "result": "exit 0\n....                                                                     [100%]\n4 passed in 1.08s\n"
+    },
+    {
+     "tool": "run",
+     "args": {
+      "command": "python atak.py"
+     },
+     "result": "exit 0\n[LUKA] wyciek-odpowiedzi: GET /tasks bez logowania -> {'id': 1, 'question': 'Ile to 2 + 2?', 'answer': '4', 'points': 1}\n[ok  ] sql-injection: login jako \"admin' --\" -> HTTP 401, admin=False\n[LUKA] zaufanie-do-klienta: odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 1000\n[LUKA] race-condition: 10 równoległych poprawnych odpowiedzi, HTTP 200: 10; punkty za zadanie warte 3: 30\n[ok  ] idor: ola czyta zgłoszenie 1 (ali) -> HTTP 404 ''\n[LUKA] wyciek-hasel: ranking zwraca pola ['id', 'is_admin', 'password', 'points', 'username']; hasz admina to md5('admin123'): Tru"
+    },
+    {
+     "tool": "message",
+     "args": {},
+     "result": "Dodałem:\n\n- `GET /me/submissions` — zwraca zgłoszenia zalogowanego użytkownika\n- `POST /change-password` — zmiana hasła po podaniu starego\n\nDodatkowo:\n- poprawiłem uwierzytelnianie tak, żeby używało dependency `current_user`\n- ograniczyłem `GET /submissions/{id}` do własnych zgłoszeń\n- dodałem walidację pól wejściowych i `exp` w JWT\n- przeniosłem sekret do `os.environ.get(\"SECRET_KEY\", ...)`\n\nTesty:\n- `pytest -q` ✅\n- `python atak.py` uruchomione ✅, ale nadal raportuje istniejące luki w innych endpointach niezwiązanych z tym zadaniem\n\nJeśli chcesz, mogę od razu domknąć też luki pokazane przez `"
+    }
+   ],
+   "promptTokens": [
+    657,
+    1650,
+    2828,
+    2952,
+    3579,
+    5357,
+    5591,
+    6214,
+    6261,
+    6610
+   ],
+   "final": "Dodałem:\n\n- `GET /me/submissions` — zwraca zgłoszenia zalogowanego użytkownika\n- `POST /change-password` — zmiana hasła po podaniu starego\n\nDodatkowo:\n- poprawiłem uwierzytelnianie tak, żeby używało dependency `current_user`\n- ograniczyłem `GET /submissions/{id}` do własnych zgłoszeń\n- dodałem walidację pól wejściowych i `exp` w JWT\n- przeniosłem sekret do `os.environ.get(\"SECRET_KEY\", ...)`\n\nTesty:\n- `pytest -q` ✅\n- `python atak.py` uruchomione ✅, ale nadal raportuje istniejące luki w innych endpointach niezwiązanych z tym zadaniem\n\nJeśli chcesz, mogę od razu domknąć też luki pokazane przez `atak.py` — zwłaszcza wyciek odpowiedzi z `/tasks`, zaufanie do klienta w `/submit`, oraz race condition.",
+   "diff": [
+    "--- app.py (przed)",
+    "+++ app.py (po)",
+    "@@ -7,2 +7,3 @@",
+    " import hashlib",
+    "+import os",
+    " import sqlite3",
+    "@@ -11,7 +12,7 @@",
+    " import jwt",
+    "-from fastapi import FastAPI, Header, HTTPException",
+    "+from fastapi import Depends, FastAPI, Header, HTTPException",
+    " from fastapi.middleware.cors import CORSMiddleware",
+    "-from pydantic import BaseModel",
+    "+from pydantic import BaseModel, Field",
+    " ",
+    "-SECRET_KEY = \"super-secret-key-123\"",
+    "+SECRET_KEY = os.environ.get(\"SECRET_KEY\", \"super-secret-key-123\")",
+    " ADMIN_PASSWORD = \"admin123\"",
+    "@@ -19,3 +20,3 @@",
+    " ",
+    "-app = FastAPI(title=\"Zadania\", debug=True)",
+    "+app = FastAPI(title=\"Zadania\", debug=False)",
+    " app.add_middleware(CORSMiddleware, allow_origins=[\"*\"], allow_credentials=True, allow_methods=[\"*\"], allow_headers=[\"*\"])",
+    "@@ -51,4 +52,4 @@",
+    " class Credentials(BaseModel):",
+    "-    username: str",
+    "-    password: str",
+    "+    username: str = Field(min_length=1, max_length=100)",
+    "+    password: str = Field(min_length=8, max_length=128)",
+    " ",
+    "@@ -56,11 +57,19 @@",
+    " class Submission(BaseModel):",
+    "-    task_id: int",
+    "-    answer: str",
+    "+    task_id: int = Field(ge=1)",
+    "+    answer: str = Field(min_length=1, max_length=1000)",
+    "     correct: bool",
+    "-    points: int",
+    "+    points: int = Field(ge=0)",
+    " ",
+    " ",
+    "-def current_user(authorization: str):",
+    "+class ChangePassword(BaseModel):",
+    "+    old_password: str = Field(min_length=8, max_length=128)",
+    "+    new_password: str = Field(min_length=8, max_length=128)",
+    "+",
+    "+",
+    "+def current_user(authorization: str = Header(...)):",
+    "     token = authorization.replace(\"Bearer \", \"\")",
+    "-    data = jwt.decode(token, SECRET_KEY, algorithms=[\"HS256\"], options={\"verify_exp\": False})",
+    "+    try:",
+    "+        data = jwt.decode(token, SECRET_KEY, algorithms=[\"HS256\"])",
+    "+    except jwt.PyJWTError:",
+    "+        raise HTTPException(401, \"Nieprawidłowy token\")",
+    "     return data",
+    "@@ -80,6 +89,6 @@",
+    "     pw = hashlib.md5(c.password.encode()).hexdigest()",
+    "-    row = conn.execute(f\"SELECT * FROM users WHERE username = '{c.username}' AND password = '{pw}'\").fetchone()",
+    "+    row = conn.execute(\"SELECT * FROM users WHERE username = ? AND password = ?\", (c.username, pw)).fetchone()",
+    "     if not row:",
+    "         raise HTTPException(401, \"Złe dane logowania\")",
+    "-    token = jwt.encode({\"id\": row[\"id\"], \"username\": row[\"username\"], \"is_admin\": row[\"is_admin\"]}, SECRET_KEY, algorithm=\"HS256\")",
+    "+    token = jwt.encode({\"id\": row[\"id\"], \"username\": row[\"username\"], \"is_admin\": row[\"is_admin\"], \"exp\": int(time.time()) + 3600}, SECRET_KEY, algorithm=\"HS256\")",
+    "     return {\"token\": token}",
+    "@@ -94,3 +103,3 @@",
+    " @app.post(\"/submit\")",
+    "-def submit(s: Submission, authorization: str = Header()):",
+    "+def submit(s: Submission, authorization: str = Header(...)):",
+    "     user = current_user(authorization)",
+    "@@ -100,3 +109,3 @@",
+    "         raise HTTPException(400, \"Zadanie już rozwiązane\")",
+    "-    time.sleep(0.05)  # zapis \"logów\"",
+    "+    time.sleep(0.05)",
+    "     conn.execute(",
+    "@@ -112,6 +121,6 @@",
+    " @app.get(\"/submissions/{submission_id}\")",
+    "-def get_submission(submission_id: int, authorization: str = Header()):",
+    "-    current_user(authorization)",
+    "+def get_submission(submission_id: int, authorization: str = Header(...)):",
+    "+    user = current_user(authorization)",
+    "     conn = db()",
+    "-    row = conn.execute(\"SELECT * FROM submissions WHERE id = ?\", (submission_id,)).fetchone()",
+    "+    row = conn.execute(\"SELECT * FROM submissions WHERE id = ? AND user_id = ?\", (submission_id, user[\"id\"])).fetchone()",
+    "     if not row:",
+    "@@ -119,2 +128,20 @@",
+    "     return dict(row)",
+    "+",
+    "+",
+    "+@app.get(\"/me/submissions\")",
+    "+def me_submissions(user=Depends(current_user)):",
+    "+    conn = db()",
+    "+    rows = conn.execute(\"SELECT * FROM submissions WHERE user_id = ? ORDER BY id\", (user[\"id\"],)).fetchall()",
+    "+    return [dict(r) for r in rows]",
+    "+",
+    "+",
+    "+@app.post(\"/change-password\")",
+    "+def change_password(payload: ChangePassword, user=Depends(current_user)):",
+    "+    conn = db()",
+    "+    row = conn.execute(\"SELECT password FROM users WHERE id = ?\", (user[\"id\"],)).fetchone()",
+    "+    if not row or row[\"password\"] != hashlib.md5(payload.old_password.encode()).hexdigest():",
+    "+        raise HTTPException(401, \"Złe hasło\")",
+    "+    conn.execute(\"UPDATE users SET password = ? WHERE id = ?\", (hashlib.md5(payload.new_password.encode()).hexdigest(), user[\"id\"]))",
+    "+    conn.commit()",
+    "+    return {\"ok\": True}",
+    " ",
+    "@@ -128,3 +155,3 @@",
+    " @app.delete(\"/users/{user_id}\")",
+    "-def delete_user(user_id: int, authorization: str = Header()):",
+    "+def delete_user(user_id: int, authorization: str = Header(...)):",
+    "     user = current_user(authorization)"
+   ],
+   "files": [
+    ".claude/agents/security-reviewer.md",
+    ".claude/settings.json",
+    ".claude/skills/api-tests/SKILL.md",
+    ".claude/skills/secure-api/SKILL.md",
+    "AGENTS.md",
+    "app.py",
+    "atak.py",
+    "requirements.txt",
+    "test_app.py"
+   ],
+   "pytest": "4 passed in 0.80s",
+   "pytestOk": true,
+   "attack": "[LUKA] wyciek-odpowiedzi: GET /tasks bez logowania -> {'id': 1, 'question': 'Ile to 2 + 2?', 'answer': '4', 'points': 1}\n[ok  ] sql-injection: login jako \"admin' --\" -> HTTP 401, admin=False\n[LUKA] zaufanie-do-klienta: odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 1000\n[LUKA] race-condition: 10 równoległych poprawnych odpowiedzi, HTTP 200: 10; punkty za zadanie warte 3: 30\n[ok  ] idor: ola czyta zgłoszenie 1 (ali) -> HTTP 404 ''\n[LUKA] wyciek-hasel: ranking zwraca pola ['id', 'is_admin', 'password', 'points', 'username']; hasz admina to md5('admin123'): True\n[ok  ] sekret-w-kodzie: token admina podpisany kluczem z repo -> DELETE /users/4: HTTP 401\n[ok  ] brak-walidacji: task_id=999, odpowiedź 1 MB -> HTTP 422\n[ok  ] blad-500-zamiast-401: zły token -> HTTP 401\n[ok  ] brak-testow: pliki test_*.py: 1",
+   "luki": 4,
+   "tests": 1,
+   "harness": "harness.py"
+  }
+ ],
+ "repeats": [
+  {
+   "name": "bez-md",
+   "run": 1,
+   "luki": 9,
+   "pytestOk": true,
+   "steps": 7,
+   "attack": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "name": "bez-md",
+   "run": 2,
+   "luki": 8,
+   "pytestOk": false,
+   "steps": 19,
+   "attack": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+   ]
+  },
+  {
+   "name": "bez-md",
+   "run": 3,
+   "luki": 8,
+   "pytestOk": true,
+   "steps": 7,
+   "attack": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+   ]
+  },
+  {
+   "name": "z-md",
+   "run": 1,
+   "luki": 4,
+   "pytestOk": true,
+   "steps": 13,
+   "attack": [
+    true,
+    false,
+    true,
+    true,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "name": "z-md",
+   "run": 2,
+   "luki": 1,
+   "pytestOk": true,
+   "steps": 16,
+   "attack": [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "name": "z-md",
+   "run": 3,
+   "luki": 1,
+   "pytestOk": true,
+   "steps": 13,
+   "attack": [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  }
+ ],
+ "checks": [
+  "wyciek-odpowiedzi",
+  "sql-injection",
+  "zaufanie-do-klienta",
+  "race-condition",
+  "idor",
+  "wyciek-hasel",
+  "sekret-w-kodzie",
+  "brak-walidacji",
+  "blad-500-zamiast-401",
+  "brak-testow"
+ ]
+}

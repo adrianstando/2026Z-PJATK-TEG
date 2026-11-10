@@ -1,0 +1,1 @@
+"""API wypożyczalni biblioteki miejskiej."""

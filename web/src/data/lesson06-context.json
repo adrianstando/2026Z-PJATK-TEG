@@ -1,0 +1,79 @@
+{
+ "tokenizer": "o200k_base",
+ "steps": [
+  {
+   "id": "system",
+   "label": "Prompt systemowy narzędzia i definicje narzędzi",
+   "when": "start",
+   "file": null,
+   "tokens": null
+  },
+  {
+   "id": "claude-md",
+   "label": ".claude/CLAUDE.md",
+   "when": "start",
+   "file": ".claude/CLAUDE.md",
+   "tokens": 733
+  },
+  {
+   "id": "skill-desc",
+   "label": "opisy skilli (notebook-format, web-ui)",
+   "when": "start",
+   "file": ".claude/skills/*/SKILL.md (frontmatter)",
+   "tokens": 143
+  },
+  {
+   "id": "task",
+   "label": "Zadanie: „dodaj slajd z wizualizacją pętli agenta”",
+   "when": "zadanie",
+   "file": null,
+   "tokens": 30
+  },
+  {
+   "id": "skill",
+   "label": "skill web-ui: pełny SKILL.md",
+   "when": "na żądanie",
+   "file": ".claude/skills/web-ui/SKILL.md",
+   "tokens": 780
+  },
+  {
+   "id": "design",
+   "label": "DESIGN.md (link w skillu)",
+   "when": "na żądanie",
+   "file": ".claude/DESIGN.md",
+   "tokens": 2611
+  },
+  {
+   "id": "refs",
+   "label": "references/viz-recipe.md, motion.md",
+   "when": "na żądanie",
+   "file": "references/*.md",
+   "tokens": 1716
+  },
+  {
+   "id": "code",
+   "label": "czytany kod: page.tsx + przykładowa wizualizacja",
+   "when": "praca",
+   "file": "web/src/...",
+   "tokens": 8366
+  }
+ ],
+ "notLoaded": [
+  {
+   "file": ".claude/skills/web-ui/references/components.md",
+   "tokens": 3234
+  },
+  {
+   "file": ".claude/skills/web-ui/references/presentation.md",
+   "tokens": 428
+  },
+  {
+   "file": ".claude/skills/web-ui/references/responsive-and-pitfalls.md",
+   "tokens": 1799
+  },
+  {
+   "file": ".claude/skills/notebook-format/SKILL.md",
+   "tokens": 1080
+  }
+ ]
+}

@@ -1,0 +1,681 @@
+{
+ "task": "Napisz od zera w app.py API w FastAPI dla aplikacji „Zadania”: użytkownicy rejestrują się i logują, rozwiązują zadania, dostają punkty i jest ranking. Endpointy: POST /register {username, password}; POST /login {username, password} -> {\"token\": \"...\"} (JWT, potem nagłówek Authorization: Bearer <token>); GET /tasks; POST /submit {task_id, answer}; GET /submissions/{id}; GET /ranking (username, points); DELETE /users/{id} (tylko admin). Baza SQLite w pliku app.db. Na start konto admin z hasłem admin123 i trzy zadania: „Ile to 2 + 2?” (odpowiedź 4, 1 pkt), „Stolica Polski?” (Warszawa, 2 pkt), „Rok bitwy pod Grunwaldem?” (1410, 3 pkt).",
+ "levels": [
+  {
+   "id": 0,
+   "label": "bez konfiguracji",
+   "add": "goły harness: jedno zdanie promptu systemowego"
+  },
+  {
+   "id": 1,
+   "label": "+ prompt systemowy",
+   "add": "„doświadczony inżynier, kod produkcyjny, bezpieczny, uruchom testy”"
+  },
+  {
+   "id": 2,
+   "label": "+ AGENTS.md",
+   "add": "jak testować, kiedy skończone, sekrety z env, 4xx zamiast 500"
+  },
+  {
+   "id": 3,
+   "label": "+ skill secure-api",
+   "add": "reguły bezpieczeństwa endpointów z powodami"
+  },
+  {
+   "id": 4,
+   "label": "+ skill api-tests",
+   "add": "jakie testy pisać: 401, cudzy zasób, race condition"
+  }
+ ],
+ "runs": {
+  "langchain": {
+   "0": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 474,
+      "result": ""
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 498,
+      "result": "zapisano 287 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "python -m py_compile app.py",
+      "context": 3042,
+      "result": "exit 0\n"
+     }
+    ],
+    "calls": 4,
+    "inputTokens": 7092,
+    "outputTokens": 2897,
+    "final": "Gotowe — napisałem `app.py` od zera z API w FastAPI, SQLite (`app.db`), JWT, rejestracją, logowaniem, zadaniami, wysyłaniem odpowiedzi, podglądem zgłoszeń, rankingiem i usuwaniem użytkowników tylko przez admina.\n\nWbudowane na start:\n- konto admin: `admin` / `admin123`\n- 3 zadania:\n  - `Ile to 2 + 2?` → `4` → 1 pkt\n  - `Stolica Polski?` → `Warszawa` → 2 pkt\n  - `Rok bitwy pod Grunwaldem?` → `1410` → 3 pkt\n\nEndpointy:\n- `POST /register`\n- `POST /login` → `{\"token\": \"...\"}`\n- `GET /tasks`\n- `POST /submit`\n- `GET /submissions/{id}`\n- `GET /ranking`\n- `DELETE /users/{id}`\n\nUwaga techniczna:\n- kod k",
+    "seconds": 19,
+    "app": "from datetime import datetime, timedelta, timezone\nfrom functools import wraps\nfrom typing import Optional\n\nfrom fastapi import FastAPI, HTTPException, Header, status\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom fastapi.security import HTTPAuthorizationCredentials, HTTPBearer\nfrom jose import JWTError, jwt\nfrom passlib.context import CryptContext\nfrom pydantic import BaseModel\nfrom sqlalchemy import Column, DateTime, ForeignKey, Integer, String, create_engine, desc, func\nfrom sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session\n\n\nDATABASE_URL = \"sqlite:///./app.db\"\nSECRET_KEY = \"change-me-please\"\nALGORITHM = \"HS256\"\nACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24\n\nengine = create_engine(DATABASE_URL, connect_args={\"check_same_thread\": False})\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\nbearer_scheme = HTTPBearer(auto_error=False)\n\napp = FastAPI(title=\"Zadania API\")\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n\nclass User(Base):\n    __tablename__ = \"users\"\n    id = Column(Integer, primary_key=True, index=True)\n    username = Column(String, unique=True, index=True, nullable=False)\n    password_hash = Column(String, nullable=False)\n    is_admin = Column(Integer, default=0, nullable=False)\n    points = Column(Integer, default=0, nullable=False)\n    submissions = relationship(\"Submission\", back_populates=\"user\", cascade=\"all, delete-orphan\")\n\n\nclass Task(Base):\n    __tablename__ = \"tasks\"\n    id = Column(Integer, primary_key=True, index=True)\n    prompt = Column(String, nullable=False)\n    correct_answer = Column(String, nullable=False)\n    points = Column(Integer, nullable=False)\n    submissions = relationship(\"Submission\", back_populates=\"task\", cascade=\"all, delete-orphan\")\n\n\nclass Submission(Base):\n    __tablename__ = \"submissions\"\n    id = Column(Integer, primary_key=True, index=True)\n    user_id = Column(Integer, ForeignKey(\"users.id\"), nullable=False)\n    task_id = Column(Integer, ForeignKey(\"tasks.id\"), nullable=False)\n    answer = Column(String, nullable=False)\n    is_correct = Column(Integer, nullable=False)\n    points_awarded = Column(Integer, nullable=False)\n    submitted_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)\n    user = relationship(\"User\", back_populates=\"submissions\")\n    task = relationship(\"Task\", back_populates=\"submissions\")\n\n\nclass RegisterRequest(BaseModel):\n    username: str\n    password: str\n\n\nclass LoginRequest(BaseModel):\n    username: str\n    password: str\n\n\nclass SubmitRequest(BaseModel):\n    task_id: int\n    answer: str\n\n\nclass TokenResponse(BaseModel):\n    token: str\n\n\nclass RankingItem(BaseModel):\n    username: str\n    points: int\n\n\nclass TaskOut(BaseModel):\n    id: int\n    prompt: str\n    points: int\n\n    class Config:\n        from_attributes = True\n\n\nclass SubmissionOut(BaseModel):\n    id: int\n    user_id: int\n    task_id: int\n    answer: str\n    is_correct: bool\n    points_awarded: int\n    submitted_at: datetime\n\n    class Config:\n        from_attributes = True\n\n\nclass UserOut(BaseModel):\n    id: int\n    username: str\n    points: int\n    is_admin: bool\n\n    class Config:\n        from_attributes = True\n\n\nclass DeleteResponse(BaseModel):\n    detail: str\n\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\n\ndef hash_password(password: str) -> str:\n    return pwd_context.hash(password)\n\n\ndef verify_password(password: str, password_hash: str) -> bool:\n    return pwd_context.verify(password, password_hash)\n\n\ndef create_access_token(data: dict) -> str:\n    to_encode = data.copy()\n    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)\n    to_encode.update({\"exp\": expire})\n    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)\n\n\ndef normalize_answer(value: str) -> str:\n    return value.strip().lower()\n\n\ndef init_db():\n    Base.metadata.create_all(bind=engine)\n    db = SessionLocal()\n    try:\n        admin = db.query(User).filter(User.username == \"admin\").first()\n        if not admin:\n            admin = User(\n                username=\"admin\",\n                password_hash=hash_password(\"admin123\"),\n                is_admin=1,\n                points=0,\n            )\n            db.add(admin)\n        tasks = [\n            (\"Ile to 2 + 2?\", \"4\", 1),\n            (\"Stolica Polski?\", \"Warszawa\", 2),\n            (\"Rok bitwy pod Grunwaldem?\", \"1410\", 3),\n        ]\n        for prompt, answer, points in tasks:\n            exists = db.query(Task).filter(Task.prompt == prompt).first()\n            if not exists:\n                db.add(Task(prompt=prompt, correct_answer=normalize_answer(answer), points=points))\n        db.commit()\n    finally:\n        db.close()\n\n\n@app.on_event(\"startup\")\ndef startup_event():\n    init_db()\n\n\ndef get_current_user(authorization: Optional[HTTPAuthorizationCredentials] = None, db: Session = None) -> User:\n    if db is None:\n        raise HTTPException(status_code=500, detail=\"Database session missing\")\n    if authorization is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Not authenticated\")\n    token = authorization.credentials\n    try:\n        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])\n        username: Optional[str] = payload.get(\"sub\")\n        if not username:\n            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    except JWTError:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    user = db.query(User).filter(User.username == username).first()\n    if not user:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    return user\n\n\n@app.post(\"/register\")\ndef register(payload: RegisterRequest, db: Session = next(get_db())):\n    if db.query(User).filter(User.username == payload.username).first():\n        raise HTTPException(status_code=400, detail=\"Username already exists\")\n    user = User(username=payload.username, password_hash=hash_password(payload.password), is_admin=0, points=0)\n    db.add(user)\n    db.commit()\n    db.refresh(user)\n    return {\"id\": user.id, \"username\": user.username}\n\n\n@app.post(\"/login\", response_model=TokenResponse)\ndef login(payload: LoginRequest, db: Session = next(get_db())):\n    user = db.query(User).filter(User.username == payload.username).first()\n    if not user or not verify_password(payload.password, user.password_hash):\n        raise HTTPException(status_code=401, detail=\"Invalid credentials\")\n    token = create_access_token({\"sub\": user.username, \"is_admin\": bool(user.is_admin)})\n    return TokenResponse(token=token)\n\n\n@app.get(\"/tasks\", response_model=list[TaskOut])\ndef list_tasks(db: Session = next(get_db()), authorization: Optional[HTTPAuthorizationCredentials] = None):\n    user = get_current_user(authorization, db)\n    _ = user\n    return db.query(Task).order_by(Task.id.asc()).all()\n\n\n@app.post(\"/submit\")\ndef submit(payload: SubmitRequest, db: Session = next(get_db()), authorization: Optional[HTTPAuthorizationCredentials] = None):\n    user = get_current_user(authorization, db)\n    task = db.query(Task).filter(Task.id == payload.task_id).first()\n    if not task:\n        raise HTTPException(status_code=404, detail=\"Task not found\")\n    correct = normalize_answer(payload.answer) == task.correct_answer\n    points_awarded = task.points if correct else 0\n    submission = Submission(\n        user_id=user.id,\n        task_id=task.id,\n        answer=payload.answer,\n        is_correct=1 if correct else 0,\n        points_awarded=points_awarded,\n    )\n    db.add(submission)\n    if correct:\n        user.points += task.points\n    db.commit()\n    db.refresh(submission)\n    return {\"id\": submission.id, \"correct\": correct, \"points_awarded\": points_awarded}\n\n\n@app.get(\"/submissions/{submission_id}\", response_model=SubmissionOut)\ndef get_submission(submission_id: int, db: Session = next(get_db()), authorization: Optional[HTTPAuthorizationCredentials] = None):\n    user = get_current_user(authorization, db)\n    submission = db.query(Submission).filter(Submission.id == submission_id).first()\n    if not submission:\n        raise HTTPException(status_code=404, detail=\"Submission not found\")\n    if submission.user_id != user.id and not user.is_admin:\n        raise HTTPException(status_code=403, detail=\"Forbidden\")\n    return submission\n\n\n@app.get(\"/ranking\", response_model=list[RankingItem])\ndef ranking(db: Session = next(get_db()), authorization: Optional[HTTPAuthorizationCredentials] = None):\n    user = get_current_user(authorization, db)\n    _ = user\n    results = db.query(User.username, User.points).order_by(desc(User.points), User.username.asc()).all()\n    return [RankingItem(username=username, points=points) for username, points in results]\n\n\n@app.delete(\"/users/{user_id}\", response_model=DeleteResponse)\ndef delete_user(user_id: int, db: Session = next(get_db()), authorization: Optional[HTTPAuthorizationCredentials] = None):\n    user = get_current_user(authorization, db)\n    if not user.is_admin:\n        raise HTTPException(status_code=403, detail=\"Admin only\")\n    if user.id == user_id:\n        raise HTTPException(status_code=400, detail=\"Admin cannot delete itself\")\n    target = db.query(User).filter(User.id == user_id).first()\n    if not target:\n        raise HTTPException(status_code=404, detail=\"User not found\")\n    db.delete(target)\n    db.commit()\n    return DeleteResponse(detail=\"User deleted\")\n",
+    "tests": {
+     "exit": 5,
+     "passed": 0,
+     "failed": 0,
+     "summary": "no tests ran in 0.00s"
+    },
+    "attack": [
+     {
+      "id": "atak-nie-ruszyl",
+      "luka": true,
+      "detail": "ing a return type annotation that is not a valid Pydantic field (e.g. Union[Response, dict, None]) you can disable generating the response model from the type annotation with the path operation decorator parameter response_model=None. Read more: https://fastapi.tiangolo.com/tutorial/response-model/\n"
+     }
+    ],
+    "luki": 1,
+    "files": [
+     "app.py"
+    ]
+   },
+   "1": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 580,
+      "result": ""
+     },
+     {
+      "tool": "run",
+      "arg": "python - <<'PY'\nimport os\nprint(os.getcwd())\nprint(os.listdir())\nPY",
+      "context": 604,
+      "result": "exit 0\n/tmp/lesson06-exp/ladder/langchain-1\n['.git']\n"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 673,
+      "result": "zapisano 256 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 3078,
+      "result": "zapisano 61 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 3704,
+      "result": "exit 1\nr.py:53: in wrapped_app\n    raise exc\n…/starlette/_exception_handler.py:42: in wrapped_app\n    await app(scope, receive, sender)\n…/fastapi/routing.py:107: in app\n    response = await f(request)\n…/fastapi/routing.py:426: in app\n    raw_response = await run_endpoint_function(\n…/fastapi/routing."
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 4499,
+      "result": "zapisano 247 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 6910,
+      "result": "exit 1\nth.join(d, \"app.db\")\n            app = load_app(db)\n            client = TestClient(app.app)\n    \n            client.post(\"/register\", json={\"username\": \"jan\", \"password\": \"secret123\"})\n            admin = client.post(\"/login\", json={\"username\": \"admin\", \"password\": \"admin123\"}).json()[\"token"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 7703,
+      "result": "zapisano 62 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 8344,
+      "result": "zapisano 233 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 10691,
+      "result": "exit 1\n=========== FAILURES ===================================\n__________________________________ test_flow ___________________________________\n\n    def test_flow():\n        with tempfile.TemporaryDirectory() as d:\n            db = os.path.join(d, \"app.db\")\n            app = load_app(db)\n          "
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 11392,
+      "result": "zapisano 217 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 13666,
+      "result": "exit 1\nF.                                                                       [100%]\n=================================== FAILURES ===================================\n__________________________________ test_flow ___________________________________\n\n    def test_flow():\n        with tempfile.Tempora"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 14303,
+      "result": "zapisano 53 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 14916,
+      "result": "exit 0\n..                                                                       [100%]\n=============================== warnings summary ===============================\ntest_app.py::test_flow\ntest_app.py::test_flow\ntest_app.py::test_admin_delete_user\n  /tmp/lesson06-exp/ladder/langchain-1/app.py:112:"
+     }
+    ],
+    "calls": 15,
+    "inputTokens": 116267,
+    "outputTokens": 11530,
+    "final": "Zrobiłem od zera `app.py` z API w FastAPI dla aplikacji „Zadania”:\n\n- rejestracja i logowanie użytkowników\n- JWT w `Authorization: Bearer <token>`\n- lista zadań\n- wysyłanie odpowiedzi i naliczanie punktów\n- pobieranie pojedynczej odpowiedzi\n- ranking użytkowników\n- usuwanie użytkowników tylko przez admina\n- baza SQLite w pliku `app.db`\n- seed na start: konto `admin/admin123` oraz 3 zadania\n\nDodałem też testy integracyjne i uruchomiłem je — przechodzą:\n- `2 passed`\n\nJeśli chcesz, mogę jeszcze dorobić:\n- hashowanie haseł zamiast trzymania ich jawnie\n- endpoint do własnego profilu\n- ograniczenie ",
+    "seconds": 77,
+    "app": "from __future__ import annotations\n\nimport os\nimport sqlite3\nfrom datetime import datetime, timedelta, timezone\nfrom typing import Any, Dict, List\n\nimport jwt\nfrom fastapi import Depends, FastAPI, HTTPException, status\nfrom fastapi.security import HTTPAuthorizationCredentials, HTTPBearer\nfrom pydantic import BaseModel, Field\n\nAPP_DB = os.getenv(\"APP_DB\", \"app.db\")\nJWT_SECRET = os.getenv(\"JWT_SECRET\", \"change-me-in-production-please-use-longer-secret\")\nJWT_ALGORITHM = \"HS256\"\nJWT_EXPIRY_MINUTES = 60 * 24\n\napp = FastAPI(title=\"Zadania API\")\nsecurity = HTTPBearer(auto_error=False)\n\n\nclass RegisterRequest(BaseModel):\n    username: str = Field(min_length=3, max_length=64)\n    password: str = Field(min_length=6, max_length=128)\n\n\nclass LoginRequest(BaseModel):\n    username: str = Field(min_length=3, max_length=64)\n    password: str = Field(min_length=6, max_length=128)\n\n\nclass SubmitRequest(BaseModel):\n    task_id: int\n    answer: str = Field(min_length=1, max_length=256)\n\n\nclass TokenResponse(BaseModel):\n    token: str\n\n\nclass TaskOut(BaseModel):\n    id: int\n    title: str\n    points: int\n\n\nclass SubmissionOut(BaseModel):\n    id: int\n    user_id: int\n    task_id: int\n    answer: str\n    is_correct: bool\n    points_awarded: int\n    created_at: str\n\n\nclass RankingRow(BaseModel):\n    username: str\n    points: int\n\n\ndef get_conn() -> sqlite3.Connection:\n    conn = sqlite3.connect(APP_DB)\n    conn.row_factory = sqlite3.Row\n    conn.execute(\"PRAGMA foreign_keys = ON\")\n    return conn\n\n\ndef init_db() -> None:\n    with get_conn() as conn:\n        conn.executescript(\n            \"\"\"\n            CREATE TABLE IF NOT EXISTS users (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                username TEXT NOT NULL UNIQUE,\n                password TEXT NOT NULL,\n                is_admin INTEGER NOT NULL DEFAULT 0,\n                points INTEGER NOT NULL DEFAULT 0,\n                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n            );\n\n            CREATE TABLE IF NOT EXISTS tasks (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                title TEXT NOT NULL,\n                answer TEXT NOT NULL,\n                points INTEGER NOT NULL,\n                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n            );\n\n            CREATE TABLE IF NOT EXISTS submissions (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                user_id INTEGER NOT NULL,\n                task_id INTEGER NOT NULL,\n                answer TEXT NOT NULL,\n                is_correct INTEGER NOT NULL,\n                points_awarded INTEGER NOT NULL,\n                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,\n                FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE\n            );\n            \"\"\"\n        )\n        if conn.execute(\"SELECT 1 FROM users WHERE username = ?\", (\"admin\",)).fetchone() is None:\n            conn.execute(\"INSERT INTO users (username, password, is_admin, points) VALUES (?, ?, 1, 0)\", (\"admin\", \"admin123\"))\n        if conn.execute(\"SELECT COUNT(*) AS c FROM tasks\").fetchone()[\"c\"] == 0:\n            conn.executemany(\n                \"INSERT INTO tasks (title, answer, points) VALUES (?, ?, ?)\",\n                [(\"Ile to 2 + 2?\", \"4\", 1), (\"Stolica Polski?\", \"Warszawa\", 2), (\"Rok bitwy pod Grunwaldem?\", \"1410\", 3)],\n            )\n\n\n@app.on_event(\"startup\")\ndef on_startup() -> None:\n    init_db()\n\n\ndef create_token(user: sqlite3.Row) -> str:\n    exp = datetime.now(timezone.utc) + timedelta(minutes=JWT_EXPIRY_MINUTES)\n    payload = {\"sub\": str(user[\"id\"]), \"username\": user[\"username\"], \"is_admin\": bool(user[\"is_admin\"]), \"exp\": exp}\n    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)\n\n\ndef get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> sqlite3.Row:\n    if credentials is None or credentials.scheme.lower() != \"bearer\":\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Not authenticated\")\n    try:\n        claims = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])\n    except Exception:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    with get_conn() as conn:\n        user = conn.execute(\"SELECT * FROM users WHERE id = ?\", (int(claims[\"sub\"]),)).fetchone()\n    if user is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    return user\n\n\ndef require_admin(user: sqlite3.Row = Depends(get_current_user)) -> sqlite3.Row:\n    if not user[\"is_admin\"]:\n        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=\"Admin only\")\n    return user\n\n\n@app.post(\"/register\", status_code=201)\ndef register(payload: RegisterRequest) -> Dict[str, Any]:\n    init_db()\n    with get_conn() as conn:\n        try:\n            conn.execute(\"INSERT INTO users (username, password, is_admin, points) VALUES (?, ?, 0, 0)\", (payload.username, payload.password))\n        except sqlite3.IntegrityError:\n            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=\"Username already exists\")\n    return {\"message\": \"registered\"}\n\n\n@app.post(\"/login\", response_model=TokenResponse)\ndef login(payload: LoginRequest) -> TokenResponse:\n    init_db()\n    with get_conn() as conn:\n        user = conn.execute(\"SELECT * FROM users WHERE username = ? AND password = ?\", (payload.username, payload.password)).fetchone()\n    if user is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid credentials\")\n    return TokenResponse(token=create_token(user))\n\n\n@app.get(\"/tasks\", response_model=List[TaskOut])\ndef tasks(_: sqlite3.Row = Depends(get_current_user)) -> List[TaskOut]:\n    init_db()\n    with get_conn() as conn:\n        rows = conn.execute(\"SELECT id, title, points FROM tasks ORDER BY id ASC\").fetchall()\n    return [TaskOut(**dict(row)) for row in rows]\n\n\n@app.post(\"/submit\", response_model=SubmissionOut)\ndef submit(payload: SubmitRequest, user: sqlite3.Row = Depends(get_current_user)) -> SubmissionOut:\n    init_db()\n    with get_conn() as conn:\n        task = conn.execute(\"SELECT * FROM tasks WHERE id = ?\", (payload.task_id,)).fetchone()\n        if task is None:\n            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Task not found\")\n        is_correct = payload.answer.strip().lower() == str(task[\"answer\"]).strip().lower()\n        points_awarded = int(task[\"points\"]) if is_correct else 0\n        cur = conn.execute(\"INSERT INTO submissions (user_id, task_id, answer, is_correct, points_awarded) VALUES (?, ?, ?, ?, ?)\", (user[\"id\"], payload.task_id, payload.answer, int(is_correct), points_awarded))\n        if points_awarded:\n            conn.execute(\"UPDATE users SET points = points + ? WHERE id = ?\", (points_awarded, user[\"id\"]))\n        submission = conn.execute(\"SELECT * FROM submissions WHERE id = ?\", (cur.lastrowid,)).fetchone()\n    return SubmissionOut(**dict(submission))\n\n\n@app.get(\"/submissions/{submission_id}\", response_model=SubmissionOut)\ndef get_submission(submission_id: int, user: sqlite3.Row = Depends(get_current_user)) -> SubmissionOut:\n    init_db()\n    with get_conn() as conn:\n        submission = conn.execute(\"SELECT * FROM submissions WHERE id = ?\", (submission_id,)).fetchone()\n    if submission is None:\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Submission not found\")\n    if submission[\"user_id\"] != user[\"id\"] and not user[\"is_admin\"]:\n        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=\"Forbidden\")\n    return SubmissionOut(**dict(submission))\n\n\n@app.get(\"/ranking\", response_model=List[RankingRow])\ndef ranking(_: sqlite3.Row = Depends(get_current_user)) -> List[RankingRow]:\n    init_db()\n    with get_conn() as conn:\n        rows = conn.execute(\"SELECT username, points FROM users ORDER BY points DESC, username ASC\").fetchall()\n    return [RankingRow(**dict(row)) for row in rows]\n\n\n@app.delete(\"/users/{user_id}\")\ndef delete_user(user_id: int, _: sqlite3.Row = Depends(require_admin)) -> Dict[str, str]:\n    init_db()\n    if user_id == 1:\n        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=\"Cannot delete admin\")\n    with get_conn() as conn:\n        result = conn.execute(\"DELETE FROM users WHERE id = ?\", (user_id,))\n        if result.rowcount == 0:\n            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"User not found\")\n    return {\"message\": \"deleted\"}\n",
+    "tests": {
+     "exit": 0,
+     "passed": 2,
+     "failed": 0,
+     "summary": "2 passed, 7 warnings in 3.94s"
+    },
+    "attack": [
+     {
+      "id": "wyciek-odpowiedzi",
+      "luka": false,
+      "detail": "GET /tasks po zalogowaniu -> {'id': 1, 'title': 'Ile to 2 + 2?', 'points': 1}"
+     },
+     {
+      "id": "sql-injection",
+      "luka": false,
+      "detail": "login jako \"admin' --\" -> HTTP 401, admin=False"
+     },
+     {
+      "id": "zaufanie-do-klienta",
+      "luka": false,
+      "detail": "odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 0"
+     },
+     {
+      "id": "race-condition",
+      "luka": true,
+      "detail": "10 równoległych poprawnych odpowiedzi, HTTP 200: 10; punkty za zadanie warte 3: 30"
+     },
+     {
+      "id": "idor",
+      "luka": false,
+      "detail": "ola czyta zgłoszenie 1 (ali) -> HTTP 403 ''"
+     },
+     {
+      "id": "wyciek-hasel",
+      "luka": false,
+      "detail": "ranking zwraca pola ['points', 'username']"
+     },
+     {
+      "id": "sekret-w-kodzie",
+      "luka": false,
+      "detail": "token admina podpisany kluczem z kodu (change-me-in…) -> DELETE /users/4: HTTP 401"
+     },
+     {
+      "id": "brak-walidacji",
+      "luka": false,
+      "detail": "task_id=999, odpowiedź 1 MB -> HTTP 422"
+     },
+     {
+      "id": "blad-500-zamiast-401",
+      "luka": false,
+      "detail": "zły token -> HTTP 401"
+     },
+     {
+      "id": "brak-testow",
+      "luka": false,
+      "detail": "pliki test_*.py: 1"
+     }
+    ],
+    "luki": 1,
+    "files": [
+     "app.py",
+     "test_app.py"
+    ]
+   },
+   "2": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 764,
+      "result": "AGENTS.md\nCLAUDE.md"
+     },
+     {
+      "tool": "read_file",
+      "arg": "AGENTS.md",
+      "context": 796,
+      "result": "# AGENTS.md\n\nAPI „Zadania”: FastAPI + SQLite, jeden plik `app.py`, testy w `test_app.py`.\n\n## Uruchomienie i testy\n\n- `pytest -q`: wszystkie testy. Bez zielonego `pytest` zadanie nie jest skończone.\n\n## Zasady\n\n1. Każdy endpoint ma test: przypadek poprawny i co najmniej jeden błędny.\n2. Sekrety (klu"
+     },
+     {
+      "tool": "read_file",
+      "arg": "CLAUDE.md",
+      "context": 1005,
+      "result": "@AGENTS.md\n"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 1041,
+      "result": "zapisano 286 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 3788,
+      "result": "zapisano 103 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 4901,
+      "result": "exit 2\n\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_app.py _________________________\nImportError while importing test module '/tmp/lesson06-exp/ladder/langchain-2/test_app.py'.\nHint: make sure your test modules/pack"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 5107,
+      "result": "zapisano 304 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 8262,
+      "result": "zapisano 99 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 9354,
+      "result": "exit 0\n.......                                                                  [100%]\n=============================== warnings summary ===============================\napp.py:213\n  /tmp/lesson06-exp/ladder/langchain-2/app.py:213: DeprecationWarning: \n          on_event is deprecated, use lifespan ev"
+     }
+    ],
+    "calls": 10,
+    "inputTokens": 44644,
+    "outputTokens": 8357,
+    "final": "Gotowe — napisałem od zera `app.py` i dodałem testy w `test_app.py`.\n\nCo działa:\n- rejestracja i logowanie użytkowników\n- JWT z `Authorization: Bearer <token>`\n- lista zadań\n- wysyłanie odpowiedzi i naliczanie punktów\n- podgląd pojedynczego zgłoszenia\n- ranking użytkowników\n- usuwanie użytkowników tylko przez admina\n- inicjalizacja SQLite `app.db` z kontem admina i 3 zadaniami startowymi\n\nWażne:\n- sekret JWT jest brany wyłącznie z `os.environ[\"JWT_SECRET\"]`\n- odpowiedzi API zwracają tylko jawnie wybrane pola\n- błędy klienta zwracają statusy 4xx\n\nTesty:\n- uruchomiłem `pytest -q`\n- wynik: `7 pas",
+    "seconds": 52,
+    "app": "from __future__ import annotations\n\nimport base64\nimport hashlib\nimport hmac\nimport json\nimport os\nimport sqlite3\nimport time\nfrom pathlib import Path\nfrom typing import Any, Optional\n\nfrom fastapi import Depends, FastAPI, HTTPException, status\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom fastapi.security import HTTPAuthorizationCredentials, HTTPBearer\nfrom pydantic import BaseModel, Field\n\nAPP_DB = Path(\"app.db\")\nJWT_ALGORITHM = \"HS256\"\nJWT_EXP_SECONDS = 60 * 60 * 24\n\napp = FastAPI(title=\"Zadania\")\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"] ,\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\nsecurity = HTTPBearer(auto_error=False)\n\n\nclass RegisterRequest(BaseModel):\n    username: str = Field(min_length=1, max_length=64)\n    password: str = Field(min_length=1, max_length=256)\n\n\nclass LoginRequest(BaseModel):\n    username: str = Field(min_length=1, max_length=64)\n    password: str = Field(min_length=1, max_length=256)\n\n\nclass SubmitRequest(BaseModel):\n    task_id: int\n    answer: str = Field(min_length=1, max_length=256)\n\n\nclass TokenResponse(BaseModel):\n    token: str\n\n\nclass TaskResponse(BaseModel):\n    id: int\n    title: str\n    points: int\n\n\nclass SubmissionResponse(BaseModel):\n    id: int\n    user_id: int\n    task_id: int\n    answer: str\n    correct: bool\n    points_awarded: int\n    created_at: str\n\n\nclass RankingRow(BaseModel):\n    username: str\n    points: int\n\n\nclass UserRecord:\n    def __init__(self, row: sqlite3.Row):\n        self.id = row[\"id\"]\n        self.username = row[\"username\"]\n        self.password_hash = row[\"password_hash\"]\n        self.is_admin = bool(row[\"is_admin\"])\n        self.points = row[\"points\"]\n\n\ndef get_db() -> sqlite3.Connection:\n    conn = sqlite3.connect(APP_DB)\n    conn.row_factory = sqlite3.Row\n    return conn\n\n\ndef get_jwt_secret() -> str:\n    secret = os.environ.get(\"JWT_SECRET\")\n    if not secret:\n        raise RuntimeError(\"JWT_SECRET environment variable is required\")\n    return secret\n\n\ndef hash_password(password: str) -> str:\n    salt = b\"zadania-salt\"\n    return hashlib.pbkdf2_hmac(\"sha256\", password.encode(\"utf-8\"), salt, 120000).hex()\n\n\ndef verify_password(password: str, password_hash: str) -> bool:\n    return hmac.compare_digest(hash_password(password), password_hash)\n\n\ndef b64url_encode(data: bytes) -> str:\n    return base64.urlsafe_b64encode(data).rstrip(b\"=\").decode(\"ascii\")\n\n\ndef b64url_decode(data: str) -> bytes:\n    padding = \"=\" * (-len(data) % 4)\n    return base64.urlsafe_b64decode(data + padding)\n\n\ndef encode_jwt(payload: dict[str, Any], secret: str) -> str:\n    header = {\"alg\": JWT_ALGORITHM, \"typ\": \"JWT\"}\n    header_b64 = b64url_encode(json.dumps(header, separators=(\",\", \":\"), sort_keys=True).encode(\"utf-8\"))\n    payload_b64 = b64url_encode(json.dumps(payload, separators=(\",\", \":\"), sort_keys=True).encode(\"utf-8\"))\n    signing_input = f\"{header_b64}.{payload_b64}\".encode(\"ascii\")\n    signature = hmac.new(secret.encode(\"utf-8\"), signing_input, hashlib.sha256).digest()\n    return f\"{header_b64}.{payload_b64}.{b64url_encode(signature)}\"\n\n\ndef decode_jwt(token: str, secret: str) -> dict[str, Any]:\n    try:\n        header_b64, payload_b64, sig_b64 = token.split(\".\")\n        signing_input = f\"{header_b64}.{payload_b64}\".encode(\"ascii\")\n        expected_sig = hmac.new(secret.encode(\"utf-8\"), signing_input, hashlib.sha256).digest()\n        if not hmac.compare_digest(expected_sig, b64url_decode(sig_b64)):\n            raise ValueError(\"bad signature\")\n        payload = json.loads(b64url_decode(payload_b64).decode(\"utf-8\"))\n        if payload.get(\"exp\") is None or int(payload[\"exp\"]) < int(time.time()):\n            raise ValueError(\"expired\")\n        if payload.get(\"sub\") is None:\n            raise ValueError(\"missing sub\")\n        return payload\n    except Exception as exc:\n        raise ValueError(\"invalid token\") from exc\n\n\ndef init_db() -> None:\n    with get_db() as conn:\n        conn.executescript(\n            \"\"\"\n            CREATE TABLE IF NOT EXISTS users (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                username TEXT NOT NULL UNIQUE,\n                password_hash TEXT NOT NULL,\n                is_admin INTEGER NOT NULL DEFAULT 0,\n                points INTEGER NOT NULL DEFAULT 0\n            );\n\n            CREATE TABLE IF NOT EXISTS tasks (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                title TEXT NOT NULL,\n                answer TEXT NOT NULL,\n                points INTEGER NOT NULL\n            );\n\n            CREATE TABLE IF NOT EXISTS submissions (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                user_id INTEGER NOT NULL,\n                task_id INTEGER NOT NULL,\n                answer TEXT NOT NULL,\n                correct INTEGER NOT NULL,\n                points_awarded INTEGER NOT NULL,\n                created_at TEXT NOT NULL,\n                FOREIGN KEY(user_id) REFERENCES users(id),\n                FOREIGN KEY(task_id) REFERENCES tasks(id)\n            );\n            \"\"\"\n        )\n        if conn.execute(\"SELECT id FROM users WHERE username = ?\", (\"admin\",)).fetchone() is None:\n            conn.execute(\n                \"INSERT INTO users (username, password_hash, is_admin, points) VALUES (?, ?, 1, 0)\",\n                (\"admin\", hash_password(\"admin123\")),\n            )\n        if conn.execute(\"SELECT COUNT(*) AS c FROM tasks\").fetchone()[\"c\"] == 0:\n            conn.executemany(\n                \"INSERT INTO tasks (title, answer, points) VALUES (?, ?, ?)\",\n                [\n                    (\"Ile to 2 + 2?\", \"4\", 1),\n                    (\"Stolica Polski?\", \"Warszawa\", 2),\n                    (\"Rok bitwy pod Grunwaldem?\", \"1410\", 3),\n                ],\n            )\n\n\ndef create_token(user: UserRecord) -> str:\n    payload = {\"sub\": str(user.id), \"username\": user.username, \"is_admin\": user.is_admin, \"exp\": int(time.time()) + JWT_EXP_SECONDS}\n    return encode_jwt(payload, get_jwt_secret())\n\n\ndef get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> UserRecord:\n    if credentials is None or credentials.scheme.lower() != \"bearer\":\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Missing bearer token\")\n    try:\n        payload = decode_jwt(credentials.credentials, get_jwt_secret())\n        user_id = int(payload[\"sub\"])\n    except (ValueError, KeyError, TypeError):\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    with get_db() as conn:\n        row = conn.execute(\"SELECT id, username, password_hash, is_admin, points FROM users WHERE id = ?\", (user_id,)).fetchone()\n    if row is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n    return UserRecord(row)\n\n\ndef require_admin(user: UserRecord = Depends(get_current_user)) -> UserRecord:\n    if not user.is_admin:\n        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=\"Admin only\")\n    return user\n\n\n@app.on_event(\"startup\")\ndef on_startup() -> None:\n    init_db()\n\n\n@app.post(\"/register\", status_code=201)\ndef register(payload: RegisterRequest) -> dict[str, Any]:\n    with get_db() as conn:\n        if conn.execute(\"SELECT id FROM users WHERE username = ?\", (payload.username,)).fetchone() is not None:\n            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=\"Username already exists\")\n        cur = conn.execute(\n            \"INSERT INTO users (username, password_hash, is_admin, points) VALUES (?, ?, 0, 0)\",\n            (payload.username, hash_password(payload.password)),\n        )\n        return {\"id\": cur.lastrowid, \"username\": payload.username}\n\n\n@app.post(\"/login\", response_model=TokenResponse)\ndef login(payload: LoginRequest) -> TokenResponse:\n    with get_db() as conn:\n        row = conn.execute(\"SELECT id, username, password_hash, is_admin, points FROM users WHERE username = ?\", (payload.username,)).fetchone()\n    if row is None or not verify_password(payload.password, row[\"password_hash\"]):\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid credentials\")\n    return TokenResponse(token=create_token(UserRecord(row)))\n\n\n@app.get(\"/tasks\", response_model=list[TaskResponse])\ndef tasks(_: UserRecord = Depends(get_current_user)) -> list[TaskResponse]:\n    with get_db() as conn:\n        rows = conn.execute(\"SELECT id, title, points FROM tasks ORDER BY id ASC\").fetchall()\n    return [TaskResponse(id=row[\"id\"], title=row[\"title\"], points=row[\"points\"]) for row in rows]\n\n\n@app.post(\"/submit\")\ndef submit(payload: SubmitRequest, user: UserRecord = Depends(get_current_user)) -> dict[str, Any]:\n    with get_db() as conn:\n        task = conn.execute(\"SELECT id, answer, points FROM tasks WHERE id = ?\", (payload.task_id,)).fetchone()\n        if task is None:\n            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Task not found\")\n        correct = payload.answer.strip().casefold() == str(task[\"answer\"]).strip().casefold()\n        points_awarded = int(task[\"points\"]) if correct else 0\n        if points_awarded:\n            conn.execute(\"UPDATE users SET points = points + ? WHERE id = ?\", (points_awarded, user.id))\n        cur = conn.execute(\n            \"INSERT INTO submissions (user_id, task_id, answer, correct, points_awarded, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))\",\n            (user.id, payload.task_id, payload.answer, int(correct), points_awarded),\n        )\n    return {\"submission_id\": cur.lastrowid, \"correct\": correct, \"points_awarded\": points_awarded}\n\n\n@app.get(\"/submissions/{submission_id}\", response_model=SubmissionResponse)\ndef get_submission(submission_id: int, user: UserRecord = Depends(get_current_user)) -> SubmissionResponse:\n    with get_db() as conn:\n        row = conn.execute(\n            \"SELECT id, user_id, task_id, answer, correct, points_awarded, created_at FROM submissions WHERE id = ?\",\n            (submission_id,),\n        ).fetchone()\n    if row is None:\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"Submission not found\")\n    if row[\"user_id\"] != user.id and not user.is_admin:\n        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=\"Forbidden\")\n    return SubmissionResponse(\n        id=row[\"id\"],\n        user_id=row[\"user_id\"],\n        task_id=row[\"task_id\"],\n        answer=row[\"answer\"],\n        correct=bool(row[\"correct\"]),\n        points_awarded=row[\"points_awarded\"],\n        created_at=row[\"created_at\"],\n    )\n\n\n@app.get(\"/ranking\", response_model=list[RankingRow])\ndef ranking() -> list[RankingRow]:\n    with get_db() as conn:\n        rows = conn.execute(\"SELECT username, points FROM users ORDER BY points DESC, username ASC\").fetchall()\n    return [RankingRow(username=row[\"username\"], points=row[\"points\"]) for row in rows]\n\n\n@app.delete(\"/users/{user_id}\")\ndef delete_user(user_id: int, _: UserRecord = Depends(require_admin)) -> dict[str, str]:\n    if user_id == 1:\n        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=\"Cannot delete admin\")\n    with get_db() as conn:\n        if conn.execute(\"SELECT id FROM users WHERE id = ?\", (user_id,)).fetchone() is None:\n            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=\"User not found\")\n        conn.execute(\"DELETE FROM submissions WHERE user_id = ?\", (user_id,))\n        conn.execute(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return {\"status\": \"deleted\"}\n\n\ninit_db()\n",
+    "tests": {
+     "exit": 0,
+     "passed": 7,
+     "failed": 0,
+     "summary": "7 passed, 3 warnings in 3.96s"
+    },
+    "attack": [
+     {
+      "id": "wyciek-odpowiedzi",
+      "luka": false,
+      "detail": "GET /tasks po zalogowaniu -> {'id': 1, 'title': 'Ile to 2 + 2?', 'points': 1}"
+     },
+     {
+      "id": "sql-injection",
+      "luka": false,
+      "detail": "login jako \"admin' --\" -> HTTP 401, admin=False"
+     },
+     {
+      "id": "zaufanie-do-klienta",
+      "luka": false,
+      "detail": "odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 0"
+     },
+     {
+      "id": "race-condition",
+      "luka": true,
+      "detail": "10 równoległych poprawnych odpowiedzi, HTTP 200: 10; punkty za zadanie warte 3: 30"
+     },
+     {
+      "id": "idor",
+      "luka": false,
+      "detail": "ola czyta zgłoszenie 1 (ali) -> HTTP 403 ''"
+     },
+     {
+      "id": "wyciek-hasel",
+      "luka": false,
+      "detail": "ranking zwraca pola ['points', 'username']"
+     },
+     {
+      "id": "sekret-w-kodzie",
+      "luka": false,
+      "detail": "w app.py nie ma klucza zapisanego na sztywno"
+     },
+     {
+      "id": "brak-walidacji",
+      "luka": false,
+      "detail": "task_id=999, odpowiedź 1 MB -> HTTP 422"
+     },
+     {
+      "id": "blad-500-zamiast-401",
+      "luka": false,
+      "detail": "zły token -> HTTP 401"
+     },
+     {
+      "id": "brak-testow",
+      "luka": false,
+      "detail": "pliki test_*.py: 1"
+     }
+    ],
+    "luki": 1,
+    "files": [
+     "AGENTS.md",
+     "CLAUDE.md",
+     "app.py",
+     "test_app.py"
+    ]
+   },
+   "3": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 822,
+      "result": ".claude/skills/secure-api/SKILL.md\nAGENTS.md\nCLAUDE.md"
+     },
+     {
+      "tool": "read_file",
+      "arg": "AGENTS.md",
+      "context": 867,
+      "result": "# AGENTS.md\n\nAPI „Zadania”: FastAPI + SQLite, jeden plik `app.py`, testy w `test_app.py`.\n\n## Uruchomienie i testy\n\n- `pytest -q`: wszystkie testy. Bez zielonego `pytest` zadanie nie jest skończone.\n\n## Zasady\n\n1. Każdy endpoint ma test: przypadek poprawny i co najmniej jeden błędny.\n2. Sekrety (klu"
+     },
+     {
+      "tool": "read_file",
+      "arg": ".claude/skills/secure-api/SKILL.md",
+      "context": 867,
+      "result": "---\nname: secure-api\ndescription: Reguły bezpieczeństwa dla endpointów FastAPI w tym projekcie (logowanie, punkty, dostęp do danych). Używać przy każdej zmianie lub dodaniu endpointu.\n---\n\n# secure-api\n\nReguły, których agent sam z siebie nie przyjmie. Każda ma powód.\n\n## Dane wejściowe\n\n- Każde pole"
+     },
+     {
+      "tool": "read_file",
+      "arg": "CLAUDE.md",
+      "context": 867,
+      "result": "@AGENTS.md\n"
+     },
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 1771,
+      "result": ".claude/skills/secure-api/SKILL.md\nAGENTS.md\nCLAUDE.md"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 1816,
+      "result": "zapisano 288 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 4686,
+      "result": "zapisano 179 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 6511,
+      "result": "exit 1\n}).json()[\"token\"]\n            client.post(\n                \"/submit\",\n                headers=auth_header(token),\n                json={\"task_id\": 1, \"answer\": \"4\"},\n            )\n    \n            unauth = client.get(\"/ranking\")\n            assert unauth.status_code == 401\n    \n            o"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 7251,
+      "result": "zapisano 218 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 9865,
+      "result": "zapisano 155 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 11654,
+      "result": "exit 1\ngister\", json={\"username\": \"charlie\", \"password\": \"password123\"})\n            assert created.status_code == 200\n            charlie_id = client.get(\"/ranking\", headers=auth_header(admin_token)).json().index({\"username\": \"charlie\", \"points\": 0}) + 3\n            ok = client.delete(f\"/users/{cha"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 12416,
+      "result": "zapisano 130 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 14123,
+      "result": "exit 1\n(\"/login\", json={\"username\": \"alice\", \"password\": \"password123\"}).json()[\"token\"]\n            admin_token = client.post(\"/login\", json={\"username\": \"admin\", \"password\": \"admin123\"}).json()[\"token\"]\n            assert client.delete(\"/users/2\", headers=auth_header(alice_token)).status_code == 4"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 15118,
+      "result": "zapisano 155 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 17556,
+      "result": "zapisano 123 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 19168,
+      "result": "exit 1\n......F.                                                                 [100%]\n=================================== FAILURES ===================================\n_____________________ test_ranking_and_unauthorized_access _____________________\n\n    def test_ranking_and_unauthorized_access():\n  "
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 19673,
+      "result": "zapisano 123 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 21293,
+      "result": "exit 0\n........                                                                 [100%]\n=============================== warnings summary ===============================\napp.py:95\n  /tmp/lesson06-exp/ladder/langchain-3/app.py:95: DeprecationWarning: \n          on_event is deprecated, use lifespan even"
+     }
+    ],
+    "calls": 17,
+    "inputTokens": 186155,
+    "outputTokens": 16706,
+    "final": "Gotowe.\n\nZrobiłem od zera:\n- `app.py` z FastAPI + SQLite\n- rejestrację i logowanie z JWT\n- autoryzację przez `Authorization: Bearer <token>`\n- listę zadań, zgłoszenia, podgląd zgłoszenia, ranking\n- usuwanie użytkowników tylko dla admina\n- inicjalizację bazy `app.db` z kontem `admin/admin123` i 3 zadaniami\n- `test_app.py` z testami dla każdego endpointu, w tym przypadki poprawne i błędne\n\nSprawdziłem też testy:\n- `pytest -q` → 8 passed\n\nJeśli chcesz, mogę jeszcze dopracować to do wersji bez deprecations FastAPI (`lifespan` zamiast `on_event`).",
+    "seconds": 112,
+    "app": "import hashlib\nimport hmac\nimport os\nimport sqlite3\nfrom contextlib import contextmanager\nfrom datetime import datetime, timedelta, timezone\nfrom typing import Generator, Optional\n\nimport jwt\nfrom fastapi import Depends, FastAPI, Header, HTTPException, status\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom pydantic import BaseModel, Field\n\nDB_PATH = \"app.db\"\nJWT_ALGORITHM = \"HS256\"\nTOKEN_TTL_SECONDS = 3600\nDEFAULT_SECRET_KEY = \"change-me-in-env-change-me-in-env\"\n\napp = FastAPI(debug=False)\napp.add_middleware(CORSMiddleware, allow_origins=[], allow_credentials=False, allow_methods=[\"*\"], allow_headers=[\"*\"],)\n\nclass RegisterRequest(BaseModel):\n    username: str = Field(min_length=3, max_length=100)\n    password: str = Field(min_length=8, max_length=128)\n\nclass LoginRequest(BaseModel):\n    username: str = Field(min_length=3, max_length=100)\n    password: str = Field(min_length=8, max_length=128)\n\nclass SubmitRequest(BaseModel):\n    task_id: int = Field(ge=1)\n    answer: str = Field(min_length=1, max_length=1000)\n\nclass UserContext(BaseModel):\n    id: int\n    username: str\n    is_admin: bool\n\n@contextmanager\ndef get_db() -> Generator[sqlite3.Connection, None, None]:\n    conn = sqlite3.connect(DB_PATH)\n    conn.row_factory = sqlite3.Row\n    try:\n        yield conn\n        conn.commit()\n    finally:\n        conn.close()\n\ndef get_secret_key() -> str:\n    return os.environ.get(\"SECRET_KEY\", DEFAULT_SECRET_KEY)\n\ndef hash_password(password: str) -> str:\n    salt = os.urandom(16)\n    digest = hashlib.scrypt(password.encode(), salt=salt, n=16384, r=8, p=1)\n    return salt.hex() + \":\" + digest.hex()\n\ndef verify_password(password: str, stored: str) -> bool:\n    try:\n        salt_hex, digest_hex = stored.split(\":\", 1)\n        actual = hashlib.scrypt(password.encode(), salt=bytes.fromhex(salt_hex), n=16384, r=8, p=1)\n        return hmac.compare_digest(actual, bytes.fromhex(digest_hex))\n    except Exception:\n        return False\n\ndef create_token(user_id: int, username: str, is_admin: bool) -> str:\n    now = datetime.now(timezone.utc)\n    return jwt.encode({\"sub\": str(user_id), \"username\": username, \"is_admin\": is_admin, \"iat\": int(now.timestamp()), \"exp\": int((now + timedelta(seconds=TOKEN_TTL_SECONDS)).timestamp())}, get_secret_key(), algorithm=JWT_ALGORITHM)\n\ndef current_user(authorization: Optional[str] = Header(default=None)) -> UserContext:\n    if not authorization or not authorization.startswith(\"Bearer \"):\n        raise HTTPException(status_code=401, detail=\"Invalid token\")\n    try:\n        payload = jwt.decode(authorization.removeprefix(\"Bearer \").strip(), get_secret_key(), algorithms=[JWT_ALGORITHM])\n        user_id = int(payload[\"sub\"])\n        username = str(payload[\"username\"])\n    except Exception:\n        raise HTTPException(status_code=401, detail=\"Invalid token\")\n    with get_db() as conn:\n        row = conn.execute(\"SELECT id, username, is_admin FROM users WHERE id = ?\", (user_id,)).fetchone()\n    if row is None or row[\"username\"] != username:\n        raise HTTPException(status_code=401, detail=\"Invalid token\")\n    return UserContext(id=row[\"id\"], username=row[\"username\"], is_admin=bool(row[\"is_admin\"]))\n\ndef init_db() -> None:\n    with get_db() as conn:\n        conn.executescript(\"\"\"\n            CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, points INTEGER NOT NULL DEFAULT 0, is_admin INTEGER NOT NULL DEFAULT 0);\n            CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT NOT NULL, answer TEXT NOT NULL, points INTEGER NOT NULL CHECK(points > 0));\n            CREATE TABLE IF NOT EXISTS submissions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, task_id INTEGER NOT NULL, answer TEXT NOT NULL, is_correct INTEGER NOT NULL, points_awarded INTEGER NOT NULL, created_at TEXT NOT NULL, UNIQUE(user_id, task_id), FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE);\n        \"\"\")\n        if conn.execute(\"SELECT 1 FROM users WHERE username = ?\", (\"admin\",)).fetchone() is None:\n            conn.execute(\"INSERT INTO users (username, password, points, is_admin) VALUES (?, ?, 0, 1)\", (\"admin\", hash_password(\"admin123\")))\n        if conn.execute(\"SELECT COUNT(*) AS c FROM tasks\").fetchone()[\"c\"] == 0:\n            conn.executemany(\"INSERT INTO tasks (title, description, answer, points) VALUES (?, ?, ?, ?)\", [(\"Ile to 2 + 2?\", \"Podaj wynik działania 2 + 2.\", \"4\", 1), (\"Stolica Polski?\", \"Podaj stolicę Polski.\", \"Warszawa\", 2), (\"Rok bitwy pod Grunwaldem?\", \"Podaj rok bitwy pod Grunwaldem.\", \"1410\", 3)])\n@app.on_event(\"startup\")\ndef on_startup() -> None:\n    init_db()\n@app.post(\"/register\")\ndef register(payload: RegisterRequest):\n    with get_db() as conn:\n        try:\n            conn.execute(\"INSERT INTO users (username, password, points, is_admin) VALUES (?, ?, 0, 0)\", (payload.username, hash_password(payload.password)))\n        except sqlite3.IntegrityError:\n            raise HTTPException(status_code=400, detail=\"Username already exists\")\n    return {\"username\": payload.username}\n@app.post(\"/login\")\ndef login(payload: LoginRequest):\n    with get_db() as conn:\n        row = conn.execute(\"SELECT id, username, password, is_admin FROM users WHERE username = ?\", (payload.username,)).fetchone()\n    if row is None or not verify_password(payload.password, row[\"password\"]):\n        raise HTTPException(status_code=401, detail=\"Invalid credentials\")\n    return {\"token\": create_token(row[\"id\"], row[\"username\"], bool(row[\"is_admin\"]))}\n@app.get(\"/tasks\")\ndef list_tasks(user: UserContext = Depends(current_user)):\n    with get_db() as conn:\n        rows = conn.execute(\"SELECT id, title, description, points FROM tasks ORDER BY id\").fetchall()\n    return [{\"id\": r[\"id\"], \"title\": r[\"title\"], \"description\": r[\"description\"], \"points\": r[\"points\"]} for r in rows]\n@app.post(\"/submit\")\ndef submit(payload: SubmitRequest, user: UserContext = Depends(current_user)):\n    with get_db() as conn:\n        task = conn.execute(\"SELECT id, answer, points FROM tasks WHERE id = ?\", (payload.task_id,)).fetchone()\n        if task is None:\n            raise HTTPException(status_code=404, detail=\"Task not found\")\n        if conn.execute(\"SELECT 1 FROM submissions WHERE user_id = ? AND task_id = ?\", (user.id, payload.task_id)).fetchone() is not None:\n            raise HTTPException(status_code=400, detail=\"Task already submitted\")\n        is_correct = payload.answer.strip() == task[\"answer\"]\n        points_awarded = int(task[\"points\"]) if is_correct else 0\n        cur = conn.execute(\"INSERT INTO submissions (user_id, task_id, answer, is_correct, points_awarded, created_at) VALUES (?, ?, ?, ?, ?, ?)\", (user.id, payload.task_id, payload.answer, int(is_correct), points_awarded, datetime.now(timezone.utc).isoformat()))\n        if points_awarded:\n            conn.execute(\"UPDATE users SET points = points + ? WHERE id = ?\", (points_awarded, user.id))\n    return {\"id\": cur.lastrowid, \"task_id\": payload.task_id, \"is_correct\": is_correct, \"points_awarded\": points_awarded}\n@app.get(\"/submissions/{submission_id}\")\ndef get_submission(submission_id: int, user: UserContext = Depends(current_user)):\n    with get_db() as conn:\n        row = conn.execute(\"SELECT id, user_id, task_id, answer, is_correct, points_awarded, created_at FROM submissions WHERE id = ? AND user_id = ?\", (submission_id, user.id)).fetchone()\n    if row is None:\n        raise HTTPException(status_code=404, detail=\"Submission not found\")\n    return {\"id\": row[\"id\"], \"user_id\": row[\"user_id\"], \"task_id\": row[\"task_id\"], \"answer\": row[\"answer\"], \"is_correct\": bool(row[\"is_correct\"]), \"points_awarded\": row[\"points_awarded\"], \"created_at\": row[\"created_at\"]}\n@app.get(\"/ranking\")\ndef ranking(user: UserContext = Depends(current_user)):\n    with get_db() as conn:\n        rows = conn.execute(\"SELECT username, points FROM users ORDER BY points DESC, username ASC\").fetchall()\n    return [{\"username\": r[\"username\"], \"points\": r[\"points\"]} for r in rows]\n@app.delete(\"/users/{user_id}\")\ndef delete_user(user_id: int, user: UserContext = Depends(current_user)):\n    if not user.is_admin:\n        raise HTTPException(status_code=403, detail=\"Admin only\")\n    if user_id == user.id:\n        raise HTTPException(status_code=400, detail=\"Cannot delete yourself\")\n    with get_db() as conn:\n        if conn.execute(\"SELECT 1 FROM users WHERE id = ?\", (user_id,)).fetchone() is None:\n            raise HTTPException(status_code=404, detail=\"User not found\")\n        conn.execute(\"DELETE FROM users WHERE id = ?\", (user_id,))\n    return {\"deleted\": True, \"user_id\": user_id}\ninit_db()\n",
+    "tests": {
+     "exit": 0,
+     "passed": 8,
+     "failed": 0,
+     "summary": "8 passed, 3 warnings in 2.92s"
+    },
+    "attack": [
+     {
+      "id": "wyciek-odpowiedzi",
+      "luka": false,
+      "detail": "GET /tasks po zalogowaniu -> {'id': 1, 'title': 'Ile to 2 + 2?', 'description': 'Podaj wynik działania 2 + 2.', 'points': 1}"
+     },
+     {
+      "id": "sql-injection",
+      "luka": false,
+      "detail": "login jako \"admin' --\" -> HTTP 401, admin=False"
+     },
+     {
+      "id": "zaufanie-do-klienta",
+      "luka": false,
+      "detail": "odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 0"
+     },
+     {
+      "id": "race-condition",
+      "luka": false,
+      "detail": "10 równoległych poprawnych odpowiedzi, HTTP 200: 1; punkty za zadanie warte 3: 3"
+     },
+     {
+      "id": "idor",
+      "luka": false,
+      "detail": "ola czyta zgłoszenie 1 (ali) -> HTTP 404 ''"
+     },
+     {
+      "id": "wyciek-hasel",
+      "luka": false,
+      "detail": "ranking zwraca pola ['points', 'username']"
+     },
+     {
+      "id": "sekret-w-kodzie",
+      "luka": false,
+      "detail": "token admina podpisany kluczem z kodu (change-me-in…) -> DELETE /users/4: HTTP 401"
+     },
+     {
+      "id": "brak-walidacji",
+      "luka": false,
+      "detail": "task_id=999, odpowiedź 1 MB -> HTTP 422"
+     },
+     {
+      "id": "blad-500-zamiast-401",
+      "luka": false,
+      "detail": "zły token -> HTTP 401"
+     },
+     {
+      "id": "brak-testow",
+      "luka": false,
+      "detail": "pliki test_*.py: 1"
+     }
+    ],
+    "luki": 0,
+    "files": [
+     "AGENTS.md",
+     "CLAUDE.md",
+     "app.py",
+     "test_app.py"
+    ]
+   },
+   "4": {
+    "harness": "harness.py (LangChain)",
+    "model": "gpt-5.4-mini",
+    "steps": [
+     {
+      "tool": "load_skill",
+      "arg": "api-tests",
+      "context": 869,
+      "result": "---\nname: api-tests\ndescription: Jak pisać testy API w tym projekcie (pytest + TestClient, osobna baza na test). Używać przy dodawaniu lub zmianie endpointu i przy naprawie błędu.\n---\n\n# api-tests\n\n- `pytest` + `fastapi.testclient.TestClient`; każdy test na świeżej bazie w `tmp_path` (fixture zmieni"
+     },
+     {
+      "tool": "load_skill",
+      "arg": "secure-api",
+      "context": 869,
+      "result": "---\nname: secure-api\ndescription: Reguły bezpieczeństwa dla endpointów FastAPI w tym projekcie (logowanie, punkty, dostęp do danych). Używać przy każdej zmianie lub dodaniu endpointu.\n---\n\n# secure-api\n\nReguły, których agent sam z siebie nie przyjmie. Każda ma powód.\n\n## Dane wejściowe\n\n- Każde pole"
+     },
+     {
+      "tool": "list_files",
+      "arg": "",
+      "context": 1798,
+      "result": ".claude/skills/api-tests/SKILL.md\n.claude/skills/secure-api/SKILL.md\nAGENTS.md\nCLAUDE.md"
+     },
+     {
+      "tool": "read_file",
+      "arg": "app.py",
+      "context": 1798,
+      "result": "BŁĄD: [Errno 2] No such file or directory: '/tmp/lesson06-exp/ladder/langchain-4/app.py'"
+     },
+     {
+      "tool": "read_file",
+      "arg": "test_app.py",
+      "context": 1798,
+      "result": "BŁĄD: [Errno 2] No such file or directory: '/tmp/lesson06-exp/ladder/langchain-4/test_app.py'"
+     },
+     {
+      "tool": "write_file",
+      "arg": "app.py",
+      "context": 1977,
+      "result": "zapisano 305 linii"
+     },
+     {
+      "tool": "write_file",
+      "arg": "test_app.py",
+      "context": 4900,
+      "result": "zapisano 129 linii"
+     },
+     {
+      "tool": "run",
+      "arg": "pytest -q",
+      "context": 6322,
+      "result": "exit 0\n.............                                                            [100%]\n=============================== warnings summary ===============================\ntest_app.py: 13 warnings\n  /tmp/lesson06-exp/ladder/langchain-4/app.py:188: DeprecationWarning: \n          on_event is deprecated, u"
+     }
+    ],
+    "calls": 6,
+    "inputTokens": 22756,
+    "outputTokens": 4636,
+    "final": "Zaimplementowałem od zera `app.py` z FastAPI i SQLite oraz dodałem testy w `test_app.py`.\n\nCo jest w API:\n- `POST /register`\n- `POST /login` → JWT\n- `GET /tasks`\n- `POST /submit`\n- `GET /submissions/{id}`\n- `GET /ranking`\n- `DELETE /users/{id}` tylko dla admina\n\nDodałem też:\n- inicjalizację bazy `app.db`\n- konto startowe `admin / admin123`\n- 3 zadania startowe\n- hashowanie haseł\n- weryfikację JWT z `SECRET_KEY` z env\n- zabezpieczenia dostępu do cudzych zasobów\n- testy dla każdego endpointu, w tym przypadki poprawne i błędne\n\nSprawdziłem wszystko przez `pytest -q` — wynik: **13 passed**.",
+    "seconds": 32,
+    "app": "import hashlib\nimport hmac\nimport os\nimport sqlite3\nfrom datetime import datetime, timedelta, timezone\nfrom typing import Generator, Optional\n\nimport jwt\nfrom fastapi import Depends, FastAPI, Header, HTTPException, status\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom pydantic import BaseModel, Field\n\nDB = \"app.db\"\nALGORITHM = \"HS256\"\nTOKEN_TTL_MINUTES = 60\n\napp = FastAPI(debug=False)\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[],\n    allow_credentials=False,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n\nclass RegisterIn(BaseModel):\n    username: str = Field(min_length=3, max_length=50)\n    password: str = Field(min_length=8, max_length=128)\n\n\nclass LoginIn(RegisterIn):\n    pass\n\n\nclass SubmitIn(BaseModel):\n    task_id: int = Field(ge=1)\n    answer: str = Field(min_length=1, max_length=1000)\n\n\nclass UserOut(BaseModel):\n    id: int\n    username: str\n    points: int\n\n\nclass TaskOut(BaseModel):\n    id: int\n    title: str\n    description: str\n    points: int\n\n\nclass SubmissionOut(BaseModel):\n    id: int\n    task_id: int\n    task_title: str\n    answer: str\n    correct: bool\n    points_awarded: int\n    created_at: str\n\n\nclass RankingOut(BaseModel):\n    username: str\n    points: int\n\n\nclass TokenOut(BaseModel):\n    token: str\n\n\nclass CurrentUser(BaseModel):\n    id: int\n    username: str\n    is_admin: bool\n\n\ndef get_connection() -> sqlite3.Connection:\n    conn = sqlite3.connect(DB, check_same_thread=False)\n    conn.row_factory = sqlite3.Row\n    return conn\n\n\ndef init_db() -> None:\n    with get_connection() as conn:\n        conn.executescript(\n            \"\"\"\n            PRAGMA foreign_keys = ON;\n            CREATE TABLE IF NOT EXISTS users (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                username TEXT NOT NULL UNIQUE,\n                password_hash TEXT NOT NULL,\n                points INTEGER NOT NULL DEFAULT 0,\n                is_admin INTEGER NOT NULL DEFAULT 0\n            );\n            CREATE TABLE IF NOT EXISTS tasks (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                title TEXT NOT NULL,\n                description TEXT NOT NULL,\n                answer TEXT NOT NULL,\n                points INTEGER NOT NULL CHECK(points > 0)\n            );\n            CREATE TABLE IF NOT EXISTS submissions (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                user_id INTEGER NOT NULL,\n                task_id INTEGER NOT NULL,\n                answer TEXT NOT NULL,\n                correct INTEGER NOT NULL,\n                points_awarded INTEGER NOT NULL,\n                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n                UNIQUE(user_id, task_id),\n                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,\n                FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE\n            );\n            \"\"\"\n        )\n        seed_data(conn)\n\n\ndef seed_data(conn: sqlite3.Connection) -> None:\n    admin = conn.execute(\"SELECT id FROM users WHERE username = ?\", (\"admin\",)).fetchone()\n    if admin is None:\n        conn.execute(\n            \"INSERT INTO users (username, password_hash, points, is_admin) VALUES (?, ?, 0, 1)\",\n            (\"admin\", hash_password(\"admin123\")),\n        )\n    tasks = conn.execute(\"SELECT COUNT(*) AS c FROM tasks\").fetchone()[\"c\"]\n    if tasks == 0:\n        conn.executemany(\n            \"INSERT INTO tasks (title, description, answer, points) VALUES (?, ?, ?, ?)\",\n            [\n                (\"Ile to 2 + 2?\", \"Podaj wynik dodawania.\", \"4\", 1),\n                (\"Stolica Polski?\", \"Podaj nazwę miasta.\", \"Warszawa\", 2),\n                (\"Rok bitwy pod Grunwaldem?\", \"Podaj rok.\", \"1410\", 3),\n            ],\n        )\n\n\ndef hash_password(password: str) -> str:\n    salt = os.urandom(16)\n    key = hashlib.scrypt(password.encode(\"utf-8\"), salt=salt, n=16384, r=8, p=1)\n    return salt.hex() + \":\" + key.hex()\n\n\ndef verify_password(password: str, stored: str) -> bool:\n    try:\n        salt_hex, key_hex = stored.split(\":\", 1)\n        salt = bytes.fromhex(salt_hex)\n        expected = bytes.fromhex(key_hex)\n        actual = hashlib.scrypt(password.encode(\"utf-8\"), salt=salt, n=16384, r=8, p=1)\n        return hmac.compare_digest(actual, expected)\n    except Exception:\n        return False\n\n\ndef get_secret_key() -> str:\n    secret = os.environ.get(\"SECRET_KEY\")\n    if not secret:\n        raise RuntimeError(\"SECRET_KEY is not set\")\n    return secret\n\n\ndef create_token(user_id: int, username: str, is_admin: bool) -> str:\n    payload = {\n        \"sub\": str(user_id),\n        \"username\": username,\n        \"is_admin\": is_admin,\n        \"exp\": datetime.now(timezone.utc) + timedelta(minutes=TOKEN_TTL_MINUTES),\n    }\n    return jwt.encode(payload, get_secret_key(), algorithm=ALGORITHM)\n\n\ndef decode_token(token: str) -> CurrentUser:\n    try:\n        payload = jwt.decode(token, get_secret_key(), algorithms=[ALGORITHM])\n        return CurrentUser(id=int(payload[\"sub\"]), username=str(payload[\"username\"]), is_admin=bool(payload.get(\"is_admin\", False)))\n    except Exception:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n\n\ndef current_user(authorization: Optional[str] = Header(default=None)) -> CurrentUser:\n    if not authorization or not authorization.startswith(\"Bearer \"):\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Missing token\")\n    return decode_token(authorization.removeprefix(\"Bearer \").strip())\n\n\n@app.on_event(\"startup\")\ndef on_startup() -> None:\n    init_db()\n\n\n@app.post(\"/register\", response_model=UserOut, status_code=201)\ndef register(data: RegisterIn) -> UserOut:\n    with get_connection() as conn:\n        try:\n            cur = conn.execute(\n                \"INSERT INTO users (username, password_hash, points, is_admin) VALUES (?, ?, 0, 0)\",\n                (data.username, hash_password(data.password)),\n            )\n            user = conn.execute(\n                \"SELECT id, username, points FROM users WHERE id = ?\",\n                (cur.lastrowid,),\n            ).fetchone()\n        except sqlite3.IntegrityError:\n            raise HTTPException(status_code=400, detail=\"Username already exists\")\n    return UserOut(id=user[\"id\"], username=user[\"username\"], points=user[\"points\"])\n\n\n@app.post(\"/login\", response_model=TokenOut)\ndef login(data: LoginIn) -> TokenOut:\n    with get_connection() as conn:\n        user = conn.execute(\n            \"SELECT id, username, password_hash, is_admin FROM users WHERE username = ?\",\n            (data.username,),\n        ).fetchone()\n    if user is None or not verify_password(data.password, user[\"password_hash\"]):\n        raise HTTPException(status_code=401, detail=\"Invalid credentials\")\n    return TokenOut(token=create_token(user[\"id\"], user[\"username\"], bool(user[\"is_admin\"])))\n\n\n@app.get(\"/tasks\", response_model=list[TaskOut])\ndef list_tasks(_: CurrentUser = Depends(current_user)) -> list[TaskOut]:\n    with get_connection() as conn:\n        rows = conn.execute(\"SELECT id, title, description, points FROM tasks ORDER BY id\").fetchall()\n    return [TaskOut(id=r[\"id\"], title=r[\"title\"], description=r[\"description\"], points=r[\"points\"]) for r in rows]\n\n\n@app.post(\"/submit\", response_model=SubmissionOut)\ndef submit(data: SubmitIn, user: CurrentUser = Depends(current_user)) -> SubmissionOut:\n    with get_connection() as conn:\n        task = conn.execute(\"SELECT id, title, answer, points FROM tasks WHERE id = ?\", (data.task_id,)).fetchone()\n        if task is None:\n            raise HTTPException(status_code=404, detail=\"Task not found\")\n        normalized_answer = data.answer.strip()\n        correct = normalized_answer.casefold() == str(task[\"answer\"]).strip().casefold()\n        points_awarded = int(task[\"points\"]) if correct else 0\n        try:\n            cur = conn.execute(\n                \"INSERT INTO submissions (user_id, task_id, answer, correct, points_awarded) VALUES (?, ?, ?, ?, ?)\",\n                (user.id, task[\"id\"], data.answer, int(correct), points_awarded),\n            )\n        except sqlite3.IntegrityError:\n            raise HTTPException(status_code=409, detail=\"Task already submitted\")\n        if points_awarded:\n            conn.execute(\"UPDATE users SET points = points + ? WHERE id = ?\", (points_awarded, user.id))\n        submission = conn.execute(\n            \"SELECT id, task_id, answer, correct, points_awarded, created_at FROM submissions WHERE id = ?\",\n            (cur.lastrowid,),\n        ).fetchone()\n    return SubmissionOut(\n        id=submission[\"id\"],\n        task_id=submission[\"task_id\"],\n        task_title=task[\"title\"],\n        answer=submission[\"answer\"],\n        correct=bool(submission[\"correct\"]),\n        points_awarded=submission[\"points_awarded\"],\n        created_at=submission[\"created_at\"],\n    )\n\n\n@app.get(\"/submissions/{submission_id}\", response_model=SubmissionOut)\ndef get_submission(submission_id: int, user: CurrentUser = Depends(current_user)) -> SubmissionOut:\n    with get_connection() as conn:\n        row = conn.execute(\n            \"\"\"\n            SELECT s.id, s.task_id, t.title AS task_title, s.answer, s.correct, s.points_awarded, s.created_at\n            FROM submissions s\n            JOIN tasks t ON t.id = s.task_id\n            WHERE s.id = ? AND s.user_id = ?\n            \"\"\",\n            (submission_id, user.id),\n        ).fetchone()\n    if row is None:\n        raise HTTPException(status_code=404, detail=\"Submission not found\")\n    return SubmissionOut(\n        id=row[\"id\"],\n        task_id=row[\"task_id\"],\n        task_title=row[\"task_title\"],\n        answer=row[\"answer\"],\n        correct=bool(row[\"correct\"]),\n        points_awarded=row[\"points_awarded\"],\n        created_at=row[\"created_at\"],\n    )\n\n\n@app.get(\"/ranking\", response_model=list[RankingOut])\ndef ranking(_: CurrentUser = Depends(current_user)) -> list[RankingOut]:\n    with get_connection() as conn:\n        rows = conn.execute(\"SELECT username, points FROM users ORDER BY points DESC, username ASC\").fetchall()\n    return [RankingOut(username=r[\"username\"], points=r[\"points\"]) for r in rows]\n\n\n@app.delete(\"/users/{user_id}\", status_code=204)\ndef delete_user(user_id: int, user: CurrentUser = Depends(current_user)) -> None:\n    if not user.is_admin:\n        raise HTTPException(status_code=403, detail=\"Admin only\")\n    if user.id == user_id:\n        raise HTTPException(status_code=400, detail=\"Admin cannot delete self\")\n    with get_connection() as conn:\n        target = conn.execute(\"SELECT id FROM users WHERE id = ?\", (user_id,)).fetchone()\n        if target is None:\n            raise HTTPException(status_code=404, detail=\"User not found\")\n        conn.execute(\"DELETE FROM users WHERE id = ?\", (user_id,))\n\n",
+    "tests": {
+     "exit": 0,
+     "passed": 13,
+     "failed": 0,
+     "summary": "13 passed, 44 warnings in 4.45s"
+    },
+    "attack": [
+     {
+      "id": "wyciek-odpowiedzi",
+      "luka": false,
+      "detail": "GET /tasks po zalogowaniu -> {'id': 1, 'title': 'Ile to 2 + 2?', 'description': 'Podaj wynik dodawania.', 'points': 1}"
+     },
+     {
+      "id": "sql-injection",
+      "luka": false,
+      "detail": "login jako \"admin' --\" -> HTTP 401, admin=False"
+     },
+     {
+      "id": "zaufanie-do-klienta",
+      "luka": false,
+      "detail": "odpowiedź '5' na 2 + 2 (correct=true, points=1000) -> HTTP 200, punkty ali: 0"
+     },
+     {
+      "id": "race-condition",
+      "luka": false,
+      "detail": "10 równoległych poprawnych odpowiedzi, HTTP 200: 1; punkty za zadanie warte 3: 3"
+     },
+     {
+      "id": "idor",
+      "luka": false,
+      "detail": "ola czyta zgłoszenie 1 (ali) -> HTTP 404 ''"
+     },
+     {
+      "id": "wyciek-hasel",
+      "luka": false,
+      "detail": "ranking zwraca pola ['points', 'username']"
+     },
+     {
+      "id": "sekret-w-kodzie",
+      "luka": false,
+      "detail": "w app.py nie ma klucza zapisanego na sztywno"
+     },
+     {
+      "id": "brak-walidacji",
+      "luka": false,
+      "detail": "task_id=999, odpowiedź 1 MB -> HTTP 422"
+     },
+     {
+      "id": "blad-500-zamiast-401",
+      "luka": false,
+      "detail": "zły token -> HTTP 401"
+     },
+     {
+      "id": "brak-testow",
+      "luka": false,
+      "detail": "pliki test_*.py: 1"
+     }
+    ],
+    "luki": 0,
+    "files": [
+     "AGENTS.md",
+     "CLAUDE.md",
+     "app.py",
+     "test_app.py"
+    ]
+   }
+  }
+ }
+}
