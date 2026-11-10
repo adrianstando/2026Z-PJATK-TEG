@@ -582,7 +582,7 @@ export default function Lesson06() {
             eyebrow="17 · Przygotowanie do skillathonu"
             accent="Skillathon:"
             title="skille zespołu, agent buduje aplikację"
-            lead="Na zajęciach 7 zespoły piszą skille do tematu podanego na początku zajęć, składają je w plugin, a agent kodujący buduje z nim aplikację. Oceniane są przede wszystkim skille."
+            lead="Na zajęciach 7 zespoły piszą skille do tematu podanego na początku zajęć, składają je w plugin, a agent kodujący buduje z nim aplikację w Next.js. Oceniane są tylko skille; aplikacja służy do ich sprawdzenia."
           />
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <Reveal delay={0.1} className="space-y-4">
@@ -590,14 +590,14 @@ export default function Lesson06() {
                 <p className="font-medium">Przebieg zajęć 7 (90 minut)</p>
                 <ol className="mt-3 space-y-2 text-sm">
                   <li><span className="font-mono text-brand-300">10 min</span> <span className="text-fg-muted">temat aplikacji i sugerowane skille (nieobowiązkowe)</span></li>
-                  <li><span className="font-mono text-brand-300">ok. 60 min</span> <span className="text-fg-muted">każda osoba pisze co najmniej jeden skill; zespół składa je w plugin (może w tym pomóc agent: nowa sesja, wszystkie skille w folderze, prośba o plugin i propozycje hooków); jedna osoba uruchamia agenta, który buduje aplikację, np. całość w Next.js albo backend w Pythonie. Na kodowanie przez agenta zostawić 25–30 minut.</span></li>
+                  <li><span className="font-mono text-brand-300">ok. 60 min</span> <span className="text-fg-muted">każda osoba pisze co najmniej jeden skill; zespół składa je w plugin (może w tym pomóc agent: nowa sesja, wszystkie skille w folderze, prośba o plugin i propozycje hooków); jedna osoba uruchamia agenta, który buduje aplikację w Next.js. Na kodowanie przez agenta zostawić 25–30 minut.</span></li>
                   <li><span className="font-mono text-brand-300">ok. 20 min</span> <span className="text-fg-muted">prezentacje, do 5 minut na zespół: aplikacja i po jednym zdaniu o każdym skillu</span></li>
                 </ol>
               </Panel>
               <Panel className="p-5 text-sm">
                 <p className="font-medium">Oddanie na koniec zajęć</p>
                 <p className="mt-2 text-fg-muted">
-                  Mail od jednej osoby, pozostali członkowie zespołu w kopii (jak zgłoszenie zespołu projektowego). W zipie folder konfiguracji agenta (<code>.claude/</code>, <code>.codex/</code>, <code>.cursor/</code>, <code>.github/</code>…) ze skillami lub pluginem i plikiem instrukcji oraz zrzuty ekranu działającej aplikacji. Bez kodu aplikacji i bez linku do repo.
+                  Mail z tytułem <span className="font-mono text-fg">[TEG] skillathon</span> od jednej osoby, pozostali członkowie zespołu w DW (jak zgłoszenie zespołu projektowego). W zipie folder konfiguracji agenta (<code>.claude/</code>, <code>.agents/</code>, <code>.github/</code>, <code>.cursor/</code>…) ze skillami lub pluginem i plikiem instrukcji oraz zrzuty ekranu aplikacji z demo. Bez kodu źródłowego aplikacji.
                 </p>
               </Panel>
             </Reveal>
@@ -619,7 +619,7 @@ export default function Lesson06() {
                   ))}
                 </dl>
               </Panel>
-              <Callout>Nieobecni na zajęciach 7 dostają na kanale Teams inny temat i oddają skille samodzielnie przed zajęciami 8, z dowodem, że poprawiają pracę agenta.</Callout>
+              <Callout>Nieobecni na zajęciach 7 dostają na kanale Teams inny temat i oddają co najmniej 4 skille samodzielnie przed zajęciami 8, przy każdym jedno–dwa zdania o tym, jaką decyzję przekazuje agentowi.</Callout>
             </Reveal>
           </div>
         </Slide>
